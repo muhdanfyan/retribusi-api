@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BillController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\ZoneController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +47,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // OPD Management (super_admin only in controller)
     Route::apiResource('opds', OpdController::class)->except(['create', 'edit']);
+
+    // User Management
+    Route::apiResource('users', UserController::class);
 
     // Dashboard Analytics
     Route::prefix('dashboard')->group(function () {

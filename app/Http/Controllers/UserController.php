@@ -1,0 +1,133 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
+
+class UserController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        $user = $request->user();
+        $query = User::query();
+
+        // If not super_admin, scope by OPD
+        if (!$user->isSuperAdmin()) {
+            $query->where('opd_id', $user->opd_id);
+        }
+
+        return response()->json($query->orderBy('name')->get());
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $loggedInUser = $request->user();
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+            'role' => ['required', 'string', Rule::in(['super_admin', 'opd', 'verifikator', 'kasir', 'viewer'])],
+            'opd_id' => 'nullable|exists:opds,id',
+            'status' => ['required', Rule::in(['active', 'inactive'])],
+        ]);
+
+        // If not super_admin, force same opd_id and restrict role elevation
+        if (!$loggedInUser->isSuperAdmin()) {
+            $validated['opd_id'] = $loggedInUser->opd_id;
+            if ($validated['role'] === 'super_admin' || $validated['role'] === 'opd') {
+                $validated['role'] = 'viewer'; // Default to lower role if attempted elevation
+            }
+        }
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'],
+            'opd_id' => $validated['opd_id'],
+            'status' => $validated['status'],
+        ]);
+
+        return response()->json($user, 201);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(User $user, Request $request)
+    {
+        $loggedInUser = $request->user();
+
+        if (!$loggedInUser->isSuperAdmin() && $user->opd_id !== $loggedInUser->opd_id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        return response()->json($user);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, User $user)
+    {
+        $loggedInUser = $request->user();
+
+        if (!$loggedInUser->isSuperAdmin() && $user->opd_id !== $loggedInUser->opd_id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'email' => ['sometimes', 'required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'password' => 'nullable|string|min:8',
+            'role' => ['sometimes', 'required', 'string', Rule::in(['super_admin', 'opd', 'verifikator', 'kasir', 'viewer'])],
+            'opd_id' => 'nullable|exists:opds,id',
+            'status' => ['sometimes', 'required', Rule::in(['active', 'inactive'])],
+        ]);
+
+        if (!$loggedInUser->isSuperAdmin()) {
+            unset($validated['opd_id']); // Cannot change OPD
+            if (isset($validated['role']) && ($validated['role'] === 'super_admin' || $validated['role'] === 'opd')) {
+                unset($validated['role']); // Cannot elevate to opd/super_admin
+            }
+        }
+
+        if (isset($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        }
+
+        $user->update($validated);
+
+        return response()->json($user);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(User $user, Request $request)
+    {
+        $loggedInUser = $request->user();
+
+        if (!$loggedInUser->isSuperAdmin() && $user->opd_id !== $loggedInUser->opd_id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if ($user->id === $loggedInUser->id) {
+            return response()->json(['message' => 'Cannot delete yourself'], 400);
+        }
+
+        $user->delete();
+
+        return response()->json(null, 204);
+    }
+}
