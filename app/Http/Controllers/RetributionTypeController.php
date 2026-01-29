@@ -3,10 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\RetributionType;
+use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 
 class RetributionTypeController extends Controller
 {
+    protected $cloudinary;
+
+    public function __construct(CloudinaryService $cloudinary)
+    {
+        $this->cloudinary = $cloudinary;
+    }
+
     /**
      * List retribution types (OPD-scoped for non-admin users)
      */
@@ -39,7 +47,7 @@ class RetributionTypeController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'category' => 'nullable|string|max:255',
-            'icon' => 'nullable|string|max:255',
+            'icon' => 'nullable|file|image|max:1024',
             'base_amount' => 'required|numeric|min:0',
             'unit' => 'required|string|max:50',
             'is_active' => 'boolean',
@@ -52,11 +60,15 @@ class RetributionTypeController extends Controller
             $opdId = $request->opd_id;
         }
 
+        $iconUrl = $request->hasFile('icon')
+            ? $this->cloudinary->upload($request->file('icon'), 'retribusi/icons')
+            : $request->icon;
+
         $type = RetributionType::create([
             'opd_id' => $opdId,
             'name' => $request->name,
             'category' => $request->category,
-            'icon' => $request->icon,
+            'icon' => $iconUrl,
             'base_amount' => $request->base_amount,
             'unit' => $request->unit,
             'is_active' => $request->boolean('is_active', true),
@@ -97,18 +109,21 @@ class RetributionTypeController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'category' => 'nullable|string|max:255',
-            'icon' => 'nullable|string|max:255',
-            'base_amount' => 'sometimes|numeric|min:0',
-            'unit' => 'sometimes|string|max:50',
-            'is_active' => 'boolean',
+        $data = $request->only([
+            'name', 'category', 'base_amount', 'unit', 'is_active'
         ]);
 
-        $retributionType->update($request->only([
-            'name', 'category', 'icon', 'base_amount', 'unit', 'is_active'
-        ]));
+        if ($request->hasFile('icon')) {
+            // Delete old icon if replaced
+            if ($retributionType->icon && filter_var($retributionType->icon, FILTER_VALIDATE_URL) && str_contains($retributionType->icon, 'cloudinary')) {
+                $this->cloudinary->delete($retributionType->icon);
+            }
+            $data['icon'] = $this->cloudinary->upload($request->file('icon'), 'retribusi/icons');
+        } elseif ($request->has('icon')) {
+            $data['icon'] = $request->icon;
+        }
+
+        $retributionType->update($data);
 
         return response()->json([
             'message' => 'Jenis retribusi berhasil diupdate',
