@@ -34,6 +34,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/citizen/change-password', [AuthController::class, 'changeCitizenPassword']);
     
+    // Citizen Service Registration
+    Route::prefix('citizen/services')->group(function () {
+        Route::get('/', [\App\Http\Controllers\CitizenServiceController::class, 'index']);
+        Route::get('/{id}', [\App\Http\Controllers\CitizenServiceController::class, 'show']);
+        Route::post('/{id}/register', [\App\Http\Controllers\CitizenServiceController::class, 'register']);
+        Route::get('/{id}/bills', [\App\Http\Controllers\CitizenServiceController::class, 'bills']);
+    });
+    
     // Retribution Types (OPD-scoped)
     Route::apiResource('retribution-types', RetributionTypeController::class)->except(['index']);
     
