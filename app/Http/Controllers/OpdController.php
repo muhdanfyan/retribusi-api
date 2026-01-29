@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Opd;
+use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +12,12 @@ use Illuminate\Validation\Rules\Password;
 
 class OpdController extends Controller
 {
+    protected $cloudinary;
+
+    public function __construct(CloudinaryService $cloudinary)
+    {
+        $this->cloudinary = $cloudinary;
+    }
     /**
      * Public OPD registration endpoint
      */
@@ -22,14 +29,18 @@ class OpdController extends Controller
             'opd_code' => 'required|string|max:50|unique:opds,code',
             'opd_address' => 'nullable|string',
             'opd_phone' => 'nullable|string|max:20',
-            'opd_email' => 'nullable|email',
             
-            // Admin User Data
+            // Admin User Data (will also be used as OPD email)
             'admin_name' => 'required|string|max:255',
-            'admin_email' => 'required|email|unique:users,email',
+            'admin_email' => 'required|email|unique:users,email|unique:opds,email',
             'admin_password' => ['required', 'confirmed', Password::min(8)],
             'admin_phone' => 'nullable|string|max:20',
+            'logo' => 'nullable|file|image|max:2048', // Max 2MB logo
         ]);
+
+        $logoUrl = $request->hasFile('logo') 
+            ? $this->cloudinary->upload($request->file('logo'), 'opds/logos')
+            : null;
 
         try {
             DB::beginTransaction();
@@ -40,9 +51,10 @@ class OpdController extends Controller
                 'code' => strtoupper($request->opd_code),
                 'address' => $request->opd_address,
                 'phone' => $request->opd_phone,
-                'email' => $request->opd_email,
+                'email' => $request->admin_email, // Link to admin email
                 'status' => 'pending', // Needs super_admin approval
                 'is_active' => true,
+                'logo_url' => $logoUrl,
             ]);
 
             // Create admin user for the OPD
@@ -112,11 +124,29 @@ class OpdController extends Controller
             'email' => 'nullable|email',
             'status' => 'sometimes|in:pending,approved,rejected',
             'is_active' => 'sometimes|boolean',
+            'logo' => 'nullable|file|image|max:2048',
         ]);
 
-        $opd->update($request->only([
+        $data = $request->only([
             'name', 'code', 'address', 'phone', 'email', 'status', 'is_active'
-        ]));
+        ]);
+
+        if ($request->hasFile('logo')) {
+            // Delete old logo if exists
+            if ($opd->logo_url) {
+                $this->cloudinary->delete($opd->logo_url);
+            }
+            $data['logo_url'] = $this->cloudinary->upload($request->file('logo'), 'opds/logos');
+        }
+
+        if ($request->has('email')) {
+            // Also update the associated admin user's email
+            User::where('opd_id', $opd->id)
+                ->where('role', 'opd')
+                ->update(['email' => $request->email]);
+        }
+
+        $opd->update($data);
 
         return response()->json([
             'message' => 'OPD berhasil diupdate',

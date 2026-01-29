@@ -40,7 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Verifications
     Route::put('/verifications/{verification}/status', [VerificationController::class, 'updateStatus']);
-    Route::apiResource('verifications', VerificationController::class)->only(['index', 'show']);
+    Route::apiResource('verifications', VerificationController::class)->only(['index', 'show', 'store']);
 
     // Zones
     Route::apiResource('zones', ZoneController::class);

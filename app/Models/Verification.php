@@ -19,6 +19,7 @@ class Verification extends Model
         'verifier_id',
         'submitted_at',
         'verified_at',
+        'proof_file_url',
     ];
 
     protected $casts = [

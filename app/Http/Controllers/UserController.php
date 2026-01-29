@@ -108,6 +108,11 @@ class UserController extends Controller
 
         $user->update($validated);
 
+        if ($user->role === 'opd' && isset($validated['email'])) {
+            // Also update the associated OPD email
+            \App\Models\Opd::where('id', $user->opd_id)->update(['email' => $validated['email']]);
+        }
+
         return response()->json($user);
     }
 

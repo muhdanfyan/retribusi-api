@@ -18,6 +18,7 @@ class Opd extends Model
         'email',
         'status',
         'is_active',
+        'logo_url',
     ];
 
     protected $casts = [
