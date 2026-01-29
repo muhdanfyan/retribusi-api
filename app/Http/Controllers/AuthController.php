@@ -82,6 +82,7 @@ class AuthController extends Controller
     {
         $request->validate([
             'nik' => 'required|string',
+            'password' => 'required|string',
         ]);
 
         $taxpayer = \App\Models\Taxpayer::where('nik', $request->nik)->first();
@@ -89,6 +90,13 @@ class AuthController extends Controller
         if (!$taxpayer) {
             return response()->json([
                 'message' => 'NIK tidak ditemukan'
+            ], 401);
+        }
+
+        // Validate password (disamakan dengan NIK)
+        if ($request->password !== $taxpayer->nik) {
+            return response()->json([
+                'message' => 'Password salah (Gunakan NIK sebagai password)'
             ], 401);
         }
 
