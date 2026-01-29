@@ -25,6 +25,15 @@ class DatabaseSeeder extends Seeder
             'status' => 'active',
         ]);
 
+        // Create Dev Super Admin
+        User::create([
+            'name' => 'Dev Super Admin',
+            'email' => 'superadmin@sipanda.online',
+            'password' => Hash::make('Sipanda123#'),
+            'role' => 'super_admin',
+            'status' => 'active',
+        ]);
+
         // Create sample OPDs with approved status
         $dishub = Opd::create([
             'name' => 'Dinas Perhubungan',
