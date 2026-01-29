@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bills', function (Blueprint $table) {
-            //
+            $table->foreignId('taxpayer_id')->after('id')->nullable()->constrained()->onDelete('cascade');
         });
     }
 
@@ -22,7 +22,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('bills', function (Blueprint $table) {
-            //
+            $table->dropForeign(['taxpayer_id']);
+            $table->dropColumn('taxpayer_id');
         });
     }
 };

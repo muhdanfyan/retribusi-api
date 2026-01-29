@@ -137,4 +137,25 @@ class BillController extends Controller
             'data' => $bill->load(['retributionType', 'opd', 'payments'])
         ]);
     }
+
+    /**
+     * List bills for a citizen (by NIK)
+     */
+    public function citizenBills(Request $request)
+    {
+        $request->validate([
+            'nik' => 'required|string',
+        ]);
+
+        $bills = \App\Models\Bill::with(['retributionType', 'opd'])
+            ->whereHas('taxpayer', function($q) use ($request) {
+                $q->where('nik', $request->nik);
+            })
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'data' => $bills
+        ]);
+    }
 }
