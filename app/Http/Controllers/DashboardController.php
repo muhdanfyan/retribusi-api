@@ -74,24 +74,27 @@ class DashboardController extends Controller
         $user = $request->user();
         $opdId = $user->role === 'opd' ? $user->opd_id : null;
 
-        $query = Payment::select(
+        $trend = Payment::select(
+            DB::raw('YEAR(paid_at) as year'),
+            DB::raw('MONTH(paid_at) as month_num'),
             DB::raw('MONTHNAME(paid_at) as month'),
             DB::raw('SUM(amount) as amount')
         )
-        ->groupBy('month')
-        ->orderBy(DB::raw('MONTH(paid_at)'));
-
-        if ($opdId) {
-            $query->whereExists(function ($q) use ($opdId) {
-                $q->select(DB::raw(1))
+        ->when($opdId, function ($q) use ($opdId) {
+            $q->whereExists(function ($sub) use ($opdId) {
+                $sub->select(DB::raw(1))
                     ->from('bills')
                     ->whereColumn('bills.id', 'payments.bill_id')
                     ->where('bills.opd_id', $opdId);
             });
-        }
-
-        // Limit to last 6 months for chart readability
-        $trend = $query->limit(6)->get();
+        })
+        ->groupBy('year', 'month_num', 'month')
+        ->orderBy('year', 'desc')
+        ->orderBy('month_num', 'desc')
+        ->limit(6)
+        ->get()
+        ->reverse()
+        ->values();
 
         return response()->json($trend);
     }
