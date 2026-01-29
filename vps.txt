@@ -1,42 +1,58 @@
-Contoh Akun:
-superadmin@risethub.id
-admin@risethub.id
-student@risethub.id
-researcher@risethub.id
+[VPS Credentials]
+IP Address: 157.10.252.74
+SSH User: sipanda
+SSH Pass: Sipanda123#
+MySQL User: sipanda
+MySQL Pass: Sipanda123#
+MySQL DB: retribusi
 
-password123
+[Services]
+API URL: http://157.10.252.74:8081/api
+phpMyAdmin: http://157.10.252.74:8080
+Nginx Port: 80 (Default), 8080 (pMA), 8081 (API)
+PHP Version: 8.4 (FPM) / 8.5 (CLI)
+
+repo mapping
+
+retribusi-mobile
+https://github.com/pondokit/retribusi-mobile
+brach : main
+domain : sipanda.online
+host : netlify connected to github
+status : sudah dibuat / done
+
+retribusi-admin
+https://github.com/pondokit/retribusi-admin
+brach : main
+domain : admin.sipanda.online
+host : netlify connected to github
+status : belum dibuat / not yet
 
 
+retribusi-mobile
+https://github.com/pondokit/retribusi-mobile
+brach : dev
+domain :dev.sipanda.online
+host : netlify connected to github
+status : belum dibuat / not yet
 
+retribusi-admin
+https://github.com/pondokit/retribusi-admin
+brach : dev
+domain : admin-dev.sipanda.online
+host : netlify connected to github
+status : belum dibuat / not yet
 
-risethub.com
+retribusi-api
+https://github.com/pondokit/retribusi-api
+brach : main
+domain : api.sipanda.online
+host : vps
+status : belum dibuat / not yet
 
-Jakarta 02
-running
-Launch Console
-
-
-
-Summary
-Ubuntu 24.04
-1 CPU Core
-1 GB Memory
-20 GB Storage
-IP Addresses
-IPv4 Address
-163.61.58.223
-
-IPv6 Address
-2001:df7:5300:19::665
-
-Access
-SSH Access
-ssh root@163.61.58.223
-Piblajar2020_
-
-Public DNS
-163-61-58-223.domainesia.io
-
-Location: Jakarta 02
-Created: January 28, 2026 7:27 PM
-
+retribusi-api
+https://github.com/pondokit/retribusi-api
+brach : dev
+domain : api-dev.sipanda.online
+host : vps
+status : belum dibuat / not yet
