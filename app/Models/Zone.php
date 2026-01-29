@@ -11,5 +11,7 @@ class Zone extends Model
         'code',
         'multiplier',
         'description',
+        'latitude',
+        'longitude',
     ];
 }
