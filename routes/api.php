@@ -9,6 +9,7 @@ use App\Http\Controllers\TaxpayerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BillController;
 use App\Http\Controllers\VerificationController;
+use App\Http\Controllers\ZoneController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,6 +40,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Verifications
     Route::put('/verifications/{verification}/status', [VerificationController::class, 'updateStatus']);
     Route::apiResource('verifications', VerificationController::class)->only(['index', 'show']);
+
+    // Zones
+    Route::apiResource('zones', ZoneController::class);
 
     // OPD Management (super_admin only in controller)
     Route::apiResource('opds', OpdController::class)->except(['create', 'edit']);
