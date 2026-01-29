@@ -21,6 +21,10 @@ use App\Http\Controllers\UserController;
 // Public routes
 Route::post('/opd/register', [OpdController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/citizen/login', [AuthController::class, 'citizenLogin']);
+Route::get('/retribution-types', [RetributionTypeController::class, 'index']); // Public access
+Route::get('/opds', [OpdController::class, 'index']); // Public access
+Route::get('/citizen/bills', [BillController::class, 'citizenBills']); // Public access for demo
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {

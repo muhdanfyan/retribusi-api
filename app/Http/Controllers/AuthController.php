@@ -74,4 +74,33 @@ class AuthController extends Controller
             'user' => $request->user()->load('opd')
         ]);
     }
+
+    /**
+     * Login citizen (taxpayer) using NIK
+     */
+    public function citizenLogin(Request $request)
+    {
+        $request->validate([
+            'nik' => 'required|string',
+        ]);
+
+        $taxpayer = \App\Models\Taxpayer::where('nik', $request->nik)->first();
+
+        if (!$taxpayer) {
+            return response()->json([
+                'message' => 'NIK tidak ditemukan'
+            ], 401);
+        }
+
+        if (!$taxpayer->is_active) {
+            return response()->json([
+                'message' => 'Akun Wajib Pajak tidak aktif'
+            ], 403);
+        }
+
+        return response()->json([
+            'user' => $taxpayer,
+            'message' => 'Login berhasil (Citizen Mode)',
+        ]);
+    }
 }

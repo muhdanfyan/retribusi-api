@@ -10,6 +10,7 @@ class Bill extends Model
 {
     protected $fillable = [
         'user_id',
+        'taxpayer_id',
         'opd_id',
         'retribution_type_id',
         'bill_number',
@@ -24,6 +25,11 @@ class Bill extends Model
         'due_date' => 'datetime',
         'metadata' => 'json',
     ];
+
+    public function taxpayer(): BelongsTo
+    {
+        return $this->belongsTo(Taxpayer::class);
+    }
 
     public function user(): BelongsTo
     {

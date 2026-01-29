@@ -23,8 +23,8 @@ class RetributionTypeController extends Controller
         $user = $request->user();
         $query = RetributionType::with('opd');
 
-        // OPD users only see their own retribution types
-        if ($user->role === 'opd' && $user->opd_id) {
+        // OPD users only see their own retribution types (if logged in)
+        if ($user && $user->role === 'opd' && $user->opd_id) {
             $query->where('opd_id', $user->opd_id);
         }
 
