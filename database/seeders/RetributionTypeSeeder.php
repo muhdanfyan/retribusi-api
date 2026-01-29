@@ -174,6 +174,14 @@ class RetributionTypeSeeder extends Seeder
                 'base_amount' => 100000,
                 'unit' => 'per m2',
             ],
+            [
+                'opd_code' => 'BAPENDA',
+                'name' => 'Pajak Bumi dan Bangunan (PBB)',
+                'category' => 'Pajak',
+                'icon' => 'https://res.cloudinary.com/ddhgtgsed/image/upload/v1769703394/retribusi/mobile/icons/imb.png',
+                'base_amount' => 0,
+                'unit' => 'per NOP',
+            ],
         ];
 
         foreach ($retributionTypes as $data) {
