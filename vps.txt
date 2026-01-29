@@ -7,52 +7,33 @@ MySQL Pass: Sipanda123#
 MySQL DB: retribusi
 
 [Services]
-API URL: http://157.10.252.74:8081/api
+API URL PROD: https://api.sipanda.online
+API URL DEV: http://api-dev.sipanda.online
 phpMyAdmin: http://157.10.252.74:8080
-Nginx Port: 80 (Default), 8080 (pMA), 8081 (API)
-PHP Version: 8.4 (FPM) / 8.5 (CLI)
+Nginx Port: 80 (API), 8080 (pMA)
 
-repo mapping
+[Netlify Projects List]
 
-retribusi-mobile
-https://github.com/pondokit/retribusi-mobile
-brach : main
-domain : sipanda.online
-host : netlify connected to github
-status : sudah dibuat / done
+retribusi-mobile (Produksi)
+- Name: e-retribusi
+- Domain: sipanda.online
+- Branch: main
 
-retribusi-admin
-https://github.com/pondokit/retribusi-admin
-brach : main
-domain : admin.sipanda.online
-host : netlify connected to github
-status : belum dibuat / not yet
+retribusi-mobile (Development)
+- Name: dev-sipanda-online
+- Domain: dev.sipanda.online
+- Branch: dev
 
+retribusi-admin (Produksi)
+- Name: retribusi-admin
+- Domain: admin.sipanda.online
+- Branch: main
 
-retribusi-mobile
-https://github.com/pondokit/retribusi-mobile
-brach : dev
-domain :dev.sipanda.online
-host : netlify connected to github
-status : belum dibuat / not yet
+retribusi-admin (Development)
+- Name: admin-dev-sipanda-online
+- Domain: admin-dev.sipanda.online
+- Branch: dev
 
-retribusi-admin
-https://github.com/pondokit/retribusi-admin
-brach : dev
-domain : admin-dev.sipanda.online
-host : netlify connected to github
-status : belum dibuat / not yet
-
-retribusi-api
-https://github.com/pondokit/retribusi-api
-brach : main
-domain : api.sipanda.online
-host : vps
-status : belum dibuat / not yet
-
-retribusi-api
-https://github.com/pondokit/retribusi-api
-brach : dev
-domain : api-dev.sipanda.online
-host : vps
-status : belum dibuat / not yet
+retribusi-api (GitHub)
+- Repo: https://github.com/muhdanfyan/retribusi-api
+- Host: VPS (api.* / api-dev.*)

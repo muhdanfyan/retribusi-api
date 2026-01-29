@@ -6,6 +6,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OpdController;
 use App\Http\Controllers\RetributionTypeController;
 use App\Http\Controllers\TaxpayerController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\BillController;
+use App\Http\Controllers\VerificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,7 +31,22 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Taxpayers (OPD-scoped)
     Route::apiResource('taxpayers', TaxpayerController::class);
+
+    // Billings
+    Route::post('/bills/bulk', [BillController::class, 'bulkStore']);
+    Route::apiResource('bills', BillController::class)->except(['update', 'destroy']);
     
+    // Verifications
+    Route::put('/verifications/{verification}/status', [VerificationController::class, 'updateStatus']);
+    Route::apiResource('verifications', VerificationController::class)->only(['index', 'show']);
+
     // OPD Management (super_admin only in controller)
     Route::apiResource('opds', OpdController::class)->except(['create', 'edit']);
+
+    // Dashboard Analytics
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/stats', [DashboardController::class, 'getStats']);
+        Route::get('/revenue-trend', [DashboardController::class, 'getRevenueTrend']);
+        Route::get('/map-potentials', [DashboardController::class, 'getMapPotentials']);
+    });
 });
