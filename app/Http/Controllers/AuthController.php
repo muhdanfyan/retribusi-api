@@ -117,7 +117,7 @@ class AuthController extends Controller
         $request->validate([
             'nik' => 'required|string|size:16|unique:taxpayers,nik',
             'name' => 'required|string',
-            'opd_id' => 'required|exists:opds,id',
+            'opd_id' => 'nullable|exists:opds,id',
             'password' => 'required|string|min:6|confirmed',
             'address' => 'nullable|string',
             'phone' => 'nullable|string',
@@ -126,7 +126,7 @@ class AuthController extends Controller
         $taxpayer = \App\Models\Taxpayer::create([
             'nik' => $request->nik,
             'name' => $request->name,
-            'opd_id' => $request->opd_id,
+            'opd_id' => $request->opd_id, // Will be null if not provided
             'address' => $request->address,
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
