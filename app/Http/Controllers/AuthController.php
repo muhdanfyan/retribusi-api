@@ -76,7 +76,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Login citizen (taxpayer) using NIK
+     * Login citizen (taxpayer) using NIK and Password
      */
     public function citizenLogin(Request $request)
     {
@@ -87,16 +87,9 @@ class AuthController extends Controller
 
         $taxpayer = \App\Models\Taxpayer::where('nik', $request->nik)->first();
 
-        if (!$taxpayer) {
+        if (!$taxpayer || !Hash::check($request->password, $taxpayer->password)) {
             return response()->json([
-                'message' => 'NIK tidak ditemukan'
-            ], 401);
-        }
-
-        // Validate password (disamakan dengan NIK)
-        if ($request->password !== $taxpayer->nik) {
-            return response()->json([
-                'message' => 'Password salah (Gunakan NIK sebagai password)'
+                'message' => 'NIK atau password salah'
             ], 401);
         }
 
@@ -106,9 +99,74 @@ class AuthController extends Controller
             ], 403);
         }
 
+        $token = $taxpayer->createToken('citizen_token')->plainTextToken;
+
         return response()->json([
             'user' => $taxpayer,
+            'token' => $token,
+            'token_type' => 'Bearer',
             'message' => 'Login berhasil (Citizen Mode)',
+        ]);
+    }
+
+    /**
+     * Register a new citizen (taxpayer)
+     */
+    public function registerCitizen(Request $request)
+    {
+        $request->validate([
+            'nik' => 'required|string|size:16|unique:taxpayers,nik',
+            'name' => 'required|string',
+            'opd_id' => 'required|exists:opds,id',
+            'password' => 'required|string|min:6|confirmed',
+            'address' => 'nullable|string',
+            'phone' => 'nullable|string',
+        ]);
+
+        $taxpayer = \App\Models\Taxpayer::create([
+            'nik' => $request->nik,
+            'name' => $request->name,
+            'opd_id' => $request->opd_id,
+            'address' => $request->address,
+            'phone' => $request->phone,
+            'password' => Hash::make($request->password),
+            'is_active' => true,
+        ]);
+
+        $token = $taxpayer->createToken('citizen_token')->plainTextToken;
+
+        return response()->json([
+            'user' => $taxpayer,
+            'token' => $token,
+            'token_type' => 'Bearer',
+            'message' => 'Registrasi berhasil',
+        ], 201);
+    }
+
+    /**
+     * Change citizen password
+     */
+    public function changeCitizenPassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $taxpayer = $request->user();
+
+        if (!Hash::check($request->current_password, $taxpayer->password)) {
+            return response()->json([
+                'message' => 'Password saat ini tidak sesuai'
+            ], 422);
+        }
+
+        $taxpayer->update([
+            'password' => Hash::make($request->new_password)
+        ]);
+
+        return response()->json([
+            'message' => 'Password berhasil diubah'
         ]);
     }
 }

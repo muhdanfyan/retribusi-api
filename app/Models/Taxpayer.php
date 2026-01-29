@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+use Laravel\Sanctum\HasApiTokens;
+
 class Taxpayer extends Model
 {
-    use HasFactory;
+    use HasFactory, HasApiTokens;
 
     protected $fillable = [
         'opd_id',
@@ -21,6 +23,11 @@ class Taxpayer extends Model
         'object_name',
         'object_address',
         'is_active',
+        'password',
+    ];
+
+    protected $hidden = [
+        'password',
     ];
 
     protected $casts = [

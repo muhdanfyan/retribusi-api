@@ -22,6 +22,7 @@ use App\Http\Controllers\UserController;
 Route::post('/opd/register', [OpdController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/citizen/login', [AuthController::class, 'citizenLogin']);
+Route::post('/citizen/register', [AuthController::class, 'registerCitizen']);
 Route::get('/retribution-types', [RetributionTypeController::class, 'index']); // Public access
 Route::get('/opds', [OpdController::class, 'index']); // Public access
 Route::get('/citizen/bills', [BillController::class, 'citizenBills']); // Public access for demo
@@ -31,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
+    Route::post('/citizen/change-password', [AuthController::class, 'changeCitizenPassword']);
     
     // Retribution Types (OPD-scoped)
     Route::apiResource('retribution-types', RetributionTypeController::class);
