@@ -178,7 +178,7 @@ class RetributionTypeSeeder extends Seeder
                 'opd_code' => 'BAPENDA',
                 'name' => 'Pajak Bumi dan Bangunan (PBB)',
                 'category' => 'Pajak',
-                'icon' => 'https://res.cloudinary.com/ddhgtgsed/image/upload/v1769703394/retribusi/mobile/icons/imb.png',
+                'icon' => 'https://res.cloudinary.com/ddhgtgsed/image/upload/v1769705644/retribusi/mobile/icons/pbb.jpg',
                 'base_amount' => 0,
                 'unit' => 'per NOP',
             ],
