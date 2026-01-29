@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
  
 class User extends Authenticatable
 {
@@ -26,7 +27,7 @@ class User extends Authenticatable
         'role',
         'phone',
         'address',
-        'department_id',
+        'opd_id',
         'status',
     ];
  
@@ -51,5 +52,29 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the OPD that this user belongs to
+     */
+    public function opd(): BelongsTo
+    {
+        return $this->belongsTo(Opd::class);
+    }
+
+    /**
+     * Check if user is super admin
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
+    }
+
+    /**
+     * Check if user is OPD admin
+     */
+    public function isOpd(): bool
+    {
+        return $this->role === 'opd';
     }
 }

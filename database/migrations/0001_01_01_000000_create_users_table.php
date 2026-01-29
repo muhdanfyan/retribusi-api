@@ -16,10 +16,10 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('nik', 16)->unique()->nullable();
-            $table->string('role')->default('citizen'); // super_admin, admin_dinas, citizen, etc.
+            $table->string('role')->default('citizen'); // super_admin, opd, citizen
             $table->string('phone')->nullable();
             $table->text('address')->nullable();
-            $table->unsignedBigInteger('department_id')->nullable();
+            $table->foreignId('opd_id')->nullable()->constrained()->nullOnDelete();
             $table->string('status')->default('active');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

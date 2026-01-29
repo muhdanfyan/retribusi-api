@@ -1,0 +1,42 @@
+Contoh Akun:
+superadmin@risethub.id
+admin@risethub.id
+student@risethub.id
+researcher@risethub.id
+
+password123
+
+
+
+
+risethub.com
+
+Jakarta 02
+running
+Launch Console
+
+
+
+Summary
+Ubuntu 24.04
+1 CPU Core
+1 GB Memory
+20 GB Storage
+IP Addresses
+IPv4 Address
+163.61.58.223
+
+IPv6 Address
+2001:df7:5300:19::665
+
+Access
+SSH Access
+ssh root@163.61.58.223
+Piblajar2020_
+
+Public DNS
+163-61-58-223.domainesia.io
+
+Location: Jakarta 02
+Created: January 28, 2026 7:27 PM
+
