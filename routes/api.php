@@ -35,7 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/citizen/change-password', [AuthController::class, 'changeCitizenPassword']);
     
     // Retribution Types (OPD-scoped)
-    Route::apiResource('retribution-types', RetributionTypeController::class);
+    Route::apiResource('retribution-types', RetributionTypeController::class)->except(['index']);
     
     // Taxpayers (OPD-scoped)
     Route::apiResource('taxpayers', TaxpayerController::class);
@@ -52,7 +52,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('zones', ZoneController::class);
 
     // OPD Management (super_admin only in controller)
-    Route::apiResource('opds', OpdController::class)->except(['create', 'edit']);
+    Route::apiResource('opds', OpdController::class)->except(['create', 'edit', 'index']);
 
     // User Management
     Route::apiResource('users', UserController::class);
