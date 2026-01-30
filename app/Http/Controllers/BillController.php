@@ -49,38 +49,64 @@ class BillController extends Controller
     {
         $user = $request->user();
 
+        // Support both new (tax_object_id) and legacy (taxpayer_id + retribution_type_id) flows
         $request->validate([
-            'tax_object_id' => 'required|exists:tax_objects,id',
+            'tax_object_id' => 'required_without_all:taxpayer_id,retribution_type_id|exists:tax_objects,id',
+            'taxpayer_id' => 'required_without:tax_object_id|exists:taxpayers,id',
+            'retribution_type_id' => 'required_without:tax_object_id|exists:retribution_types,id',
             'amount' => 'required|numeric|min:0',
             'period' => 'required|string',
             'due_date' => 'required|date',
             'metadata' => 'nullable|array',
         ]);
 
-        $taxObject = TaxObject::with('taxpayer')->find($request->tax_object_id);
-        
-        // Security check
-        if (!$user->isSuperAdmin() && $taxObject->opd_id !== $user->opd_id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        if ($request->tax_object_id) {
+            // New flow: bill is linked to a specific tax object
+            $taxObject = TaxObject::with('taxpayer')->find($request->tax_object_id);
+            
+            if (!$user->isSuperAdmin() && $taxObject->opd_id !== $user->opd_id) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
 
-        $bill = Bill::create([
-            'user_id' => $user->id,
-            'taxpayer_id' => $taxObject->taxpayer_id,
-            'tax_object_id' => $taxObject->id,
-            'opd_id' => $taxObject->opd_id,
-            'retribution_type_id' => $taxObject->retribution_type_id,
-            'bill_number' => 'INV-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
-            'amount' => $request->amount,
-            'status' => 'pending',
-            'period' => $request->period,
-            'metadata' => $request->metadata,
-            'due_date' => $request->due_date,
-        ]);
+            $bill = Bill::create([
+                'user_id' => $user->id,
+                'taxpayer_id' => $taxObject->taxpayer_id,
+                'tax_object_id' => $taxObject->id,
+                'opd_id' => $taxObject->opd_id,
+                'retribution_type_id' => $taxObject->retribution_type_id,
+                'bill_number' => 'INV-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
+                'amount' => $request->amount,
+                'status' => 'pending',
+                'period' => $request->period,
+                'metadata' => $request->metadata,
+                'due_date' => $request->due_date,
+            ]);
+        } else {
+            // Legacy flow: bill is linked to taxpayer + retribution type (no specific object)
+            $taxpayer = Taxpayer::find($request->taxpayer_id);
+            
+            if (!$user->isSuperAdmin() && $taxpayer->opd_id !== $user->opd_id) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            $bill = Bill::create([
+                'user_id' => $user->id,
+                'taxpayer_id' => $taxpayer->id,
+                'tax_object_id' => null,
+                'opd_id' => $taxpayer->opd_id,
+                'retribution_type_id' => $request->retribution_type_id,
+                'bill_number' => 'INV-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
+                'amount' => $request->amount,
+                'status' => 'pending',
+                'period' => $request->period,
+                'metadata' => $request->metadata,
+                'due_date' => $request->due_date,
+            ]);
+        }
 
         return response()->json([
             'message' => 'Tagihan berhasil dibuat',
-            'data' => $bill->load(['retributionType', 'opd', 'taxObject'])
+            'data' => $bill->load(['retributionType', 'opd', 'taxObject', 'taxpayer'])
         ], 201);
     }
 
