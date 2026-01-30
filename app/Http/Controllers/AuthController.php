@@ -76,6 +76,53 @@ class AuthController extends Controller
     }
 
     /**
+     * Update authenticated user profile
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+        
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:' . ($user instanceof \App\Models\User ? 'users' : 'taxpayers') . ',email,' . $user->id,
+        ]);
+
+        $user->update($request->only('name', 'email'));
+
+        return response()->json([
+            'message' => 'Profil berhasil diperbarui',
+            'user' => $user->load('opd')
+        ]);
+    }
+
+    /**
+     * Change authenticated user password
+     */
+    public function changePassword(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => ['required', 'string', 'confirmed', Password::min(8)],
+        ]);
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'message' => 'Password saat ini tidak sesuai'
+            ], 422);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->new_password)
+        ]);
+
+        return response()->json([
+            'message' => 'Password berhasil diubah'
+        ]);
+    }
+
+    /**
      * Login citizen (taxpayer) using NIK and Password
      */
     public function citizenLogin(Request $request)

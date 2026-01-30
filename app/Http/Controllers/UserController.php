@@ -22,7 +22,12 @@ class UserController extends Controller
             $query->where('opd_id', $user->opd_id);
         }
 
-        return response()->json($query->orderBy('name')->get());
+        $users = $query->with('opd')->orderBy('name')->get()->map(function ($u) {
+            $u->department = $u->opd?->name;
+            return $u;
+        });
+
+        return response()->json($users);
     }
 
     /**

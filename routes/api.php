@@ -31,8 +31,10 @@ Route::get('/citizen/bills', [BillController::class, 'citizenBills']); // Public
 Route::middleware('auth:sanctum')->group(function () {
     // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
+    // Auth Profile & Password
     Route::get('/user', [AuthController::class, 'user']);
-    Route::post('/citizen/change-password', [AuthController::class, 'changeCitizenPassword']);
+    Route::put('/user/profile', [AuthController::class, 'updateProfile']);
+    Route::post('/user/password', [AuthController::class, 'changePassword']);
     
     // Citizen Service Registration
     Route::prefix('citizen/services')->group(function () {
