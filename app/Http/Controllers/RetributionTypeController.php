@@ -23,8 +23,8 @@ class RetributionTypeController extends Controller
         $user = $request->user();
         $query = RetributionType::with('opd');
 
-        // All non-super-admins only see their own retribution types
-        if ($user && !$user->isSuperAdmin() && $user->opd_id) {
+        // Admin OPD only sees their own retribution types
+        if ($user && $user->role === 'opd') {
             $query->where('opd_id', $user->opd_id);
         }
 

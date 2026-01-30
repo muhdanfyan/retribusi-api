@@ -16,8 +16,8 @@ class TaxpayerController extends Controller
         $user = $request->user();
         $query = Taxpayer::with(['opd', 'retributionTypes']);
 
-        // All non-super-admins only see their own OPD's taxpayers
-        if (!$user->isSuperAdmin() && $user->opd_id) {
+        // Admin OPD only sees their own OPD's taxpayers
+        if ($user && $user->role === 'opd') {
             $query->where('opd_id', $user->opd_id);
         }
 

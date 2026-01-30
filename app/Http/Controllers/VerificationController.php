@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Verification;
 use App\Models\TaxObject;
+use App\Models\Bill;
 use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class VerificationController extends Controller
@@ -112,11 +114,25 @@ class VerificationController extends Controller
 
         // If this is an object registration and it's approved, activate the object
         if ($request->status === 'approved' && $verification->tax_object_id) {
-            $taxObject = TaxObject::find($verification->tax_object_id);
+            $taxObject = TaxObject::with('retributionType')->find($verification->tax_object_id);
             if ($taxObject) {
                 $taxObject->update([
                     'status' => 'active',
                     'approved_at' => Carbon::now(),
+                ]);
+
+                // Create initial bill automatically
+                Bill::create([
+                    'user_id' => $user->id,
+                    'taxpayer_id' => $taxObject->taxpayer_id,
+                    'tax_object_id' => $taxObject->id,
+                    'opd_id' => $taxObject->opd_id,
+                    'retribution_type_id' => $taxObject->retribution_type_id,
+                    'bill_number' => 'INV-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
+                    'amount' => $taxObject->retributionType->base_amount,
+                    'status' => 'pending',
+                    'period' => Carbon::now()->isoFormat('MMMM YYYY'),
+                    'due_date' => Carbon::now()->addDays(30),
                 ]);
             }
         }

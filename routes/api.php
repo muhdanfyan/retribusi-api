@@ -23,7 +23,6 @@ Route::post('/opd/register', [OpdController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/citizen/login', [AuthController::class, 'citizenLogin']);
 Route::post('/citizen/register', [AuthController::class, 'registerCitizen']);
-Route::get('/retribution-types', [RetributionTypeController::class, 'index']); // Public access
 Route::get('/opds', [OpdController::class, 'index']); // Public access
 Route::get('/citizen/bills', [BillController::class, 'citizenBills']); // Public access for demo
 
@@ -45,7 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     
     // Retribution Types (OPD-scoped)
-    Route::apiResource('retribution-types', RetributionTypeController::class)->except(['index']);
+    Route::apiResource('retribution-types', RetributionTypeController::class);
     
     // Taxpayers (OPD-scoped)
     Route::apiResource('taxpayers', TaxpayerController::class);
