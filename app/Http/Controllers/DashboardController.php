@@ -17,7 +17,7 @@ class DashboardController extends Controller
     public function getStats(Request $request)
     {
         $user = $request->user();
-        $opdId = $user->role === 'opd' ? $user->opd_id : null;
+        $opdId = !$user->isSuperAdmin() ? $user->opd_id : null;
 
         $totalRevenueQuery = Payment::query();
         $pendingBillsQuery = Bill::where('status', 'pending');
@@ -72,7 +72,7 @@ class DashboardController extends Controller
     public function getRevenueTrend(Request $request)
     {
         $user = $request->user();
-        $opdId = $user->role === 'opd' ? $user->opd_id : null;
+        $opdId = !$user->isSuperAdmin() ? $user->opd_id : null;
 
         $trend = Payment::select(
             DB::raw('YEAR(paid_at) as year'),

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 use Laravel\Sanctum\HasApiTokens;
 
@@ -50,6 +51,14 @@ class Taxpayer extends Model
         return $this->belongsToMany(RetributionType::class, 'taxpayer_retribution_type')
             ->withPivot(['custom_amount', 'notes'])
             ->withTimestamps();
+    }
+
+    /**
+     * Get all tax objects owned by this taxpayer
+     */
+    public function taxObjects(): HasMany
+    {
+        return $this->hasMany(TaxObject::class);
     }
 
     /**

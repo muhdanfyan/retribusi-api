@@ -4,13 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\RetributionType;
 use App\Models\Taxpayer;
+use App\Models\TaxObject;
 use App\Models\Bill;
+use App\Models\Verification;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class CitizenServiceController extends Controller
 {
     /**
-     * List all active services with registration status for the logged-in citizen
+     * List all active services with registration count for the logged-in citizen
      */
     public function index(Request $request)
     {
@@ -21,9 +24,9 @@ class CitizenServiceController extends Controller
             ->orderBy('name')
             ->get()
             ->map(function ($service) use ($taxpayer) {
-                $registration = $taxpayer->retributionTypes()
+                $objects = TaxObject::where('taxpayer_id', $taxpayer->id)
                     ->where('retribution_type_id', $service->id)
-                    ->first();
+                    ->get();
                 
                 return [
                     'id' => $service->id,
@@ -33,8 +36,10 @@ class CitizenServiceController extends Controller
                     'base_amount' => $service->base_amount,
                     'unit' => $service->unit,
                     'opd' => $service->opd,
-                    'is_registered' => $registration !== null,
-                    'registration_date' => $registration?->pivot?->created_at,
+                    'object_count' => $objects->count(),
+                    'active_objects_count' => $objects->where('status', 'active')->count(),
+                    'form_schema' => $service->form_schema,
+                    'requirements' => $service->requirements,
                 ];
             });
 
@@ -42,7 +47,7 @@ class CitizenServiceController extends Controller
     }
 
     /**
-     * Get service detail with registration status and bills
+     * Get service detail with list of objects and bills
      */
     public function show(Request $request, $id)
     {
@@ -50,18 +55,23 @@ class CitizenServiceController extends Controller
         
         $service = RetributionType::with('opd:id,name,code')->findOrFail($id);
         
-        $registration = $taxpayer->retributionTypes()
+        $objects = TaxObject::where('taxpayer_id', $taxpayer->id)
             ->where('retribution_type_id', $service->id)
-            ->first();
+            ->with('zone')
+            ->get();
         
-        $bills = [];
-        if ($registration) {
-            $bills = Bill::where('taxpayer_id', $taxpayer->id)
-                ->where('retribution_type_id', $service->id)
-                ->with('opd:id,name')
-                ->latest()
-                ->get();
-        }
+        $objectIds = $objects->pluck('id');
+        
+        $bills = Bill::whereIn('tax_object_id', $objectIds)
+            ->orWhere(function($q) use ($taxpayer, $service) {
+                // Backward compatibility for old bills linked directly to taxpayer
+                $q->where('taxpayer_id', $taxpayer->id)
+                  ->where('retribution_type_id', $service->id)
+                  ->whereNull('tax_object_id');
+            })
+            ->with('opd:id,name')
+            ->latest()
+            ->get();
 
         return response()->json([
             'data' => [
@@ -72,83 +82,93 @@ class CitizenServiceController extends Controller
                 'base_amount' => $service->base_amount,
                 'unit' => $service->unit,
                 'opd' => $service->opd,
-                'is_registered' => $registration !== null,
-                'registration_date' => $registration?->pivot?->created_at,
-                'custom_amount' => $registration?->pivot?->custom_amount,
-                'notes' => $registration?->pivot?->notes,
+                'form_schema' => $service->form_schema,
+                'requirements' => $service->requirements,
+                'objects' => $objects,
                 'bills' => $bills,
             ]
         ]);
     }
 
     /**
-     * Register citizen for a service
+     * Register a new tax object for a service
      */
     public function register(Request $request, $id)
     {
         $taxpayer = $request->user();
-        
         $service = RetributionType::findOrFail($id);
-        
-        // Check if already registered
-        $existing = $taxpayer->retributionTypes()
-            ->where('retribution_type_id', $service->id)
-            ->exists();
-        
-        if ($existing) {
-            return response()->json([
-                'message' => 'Anda sudah terdaftar pada layanan ini'
-            ], 422);
-        }
 
         $request->validate([
-            'notes' => 'nullable|string|max:500',
+            'name' => 'required|string|max:255',
+            'address' => 'required|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'zone_id' => 'nullable|exists:zones,id',
+            'metadata' => 'nullable|array',
+            'proof_file' => 'nullable|file|max:2048', // Optional proof for registration
         ]);
 
-        // Register the taxpayer for this service
-        $taxpayer->retributionTypes()->attach($service->id, [
-            'notes' => $request->notes,
-            'custom_amount' => null, // Admin can set this later
+        // Create the tax object
+        $taxObject = TaxObject::create([
+            'taxpayer_id' => $taxpayer->id,
+            'retribution_type_id' => $service->id,
+            'opd_id' => $service->opd_id,
+            'zone_id' => $request->zone_id,
+            'name' => $request->name,
+            'address' => $request->address,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'metadata' => $request->metadata,
+            'status' => 'pending',
         ]);
 
-        // Update taxpayer's opd_id if not set
+        // Create a verification record for the admin to review
+        $verification = Verification::create([
+            'opd_id' => $service->opd_id,
+            'taxpayer_id' => $taxpayer->id,
+            'tax_object_id' => $taxObject->id,
+            'document_number' => 'REG-' . strtoupper(uniqid()),
+            'taxpayer_name' => $taxpayer->name,
+            'type' => 'Pendaftaran Objek',
+            'amount' => 0, // Registration usually 0 or fixed admin fee
+            'status' => 'pending',
+            'submitted_at' => Carbon::now(),
+            'notes' => 'Pendaftaran unit baru: ' . $taxObject->name,
+        ]);
+
+        // Update taxpayer's opd_id if not set (primary affiliation)
         if (!$taxpayer->opd_id) {
             $taxpayer->update(['opd_id' => $service->opd_id]);
         }
 
         return response()->json([
-            'message' => 'Berhasil mendaftar layanan ' . $service->name,
+            'message' => 'Pendaftaran unit berhasil dikirim dan menunggu verifikasi',
             'data' => [
-                'service_id' => $service->id,
-                'service_name' => $service->name,
-                'registered_at' => now(),
+                'object' => $taxObject,
+                'verification_id' => $verification->id,
             ]
         ], 201);
     }
 
     /**
-     * Get bills for a specific service
+     * Get bills for a specific service (aggregated across all objects)
      */
     public function bills(Request $request, $id)
     {
         $taxpayer = $request->user();
-        
         $service = RetributionType::findOrFail($id);
         
-        // Check if registered
-        $isRegistered = $taxpayer->retributionTypes()
+        $objectIds = TaxObject::where('taxpayer_id', $taxpayer->id)
             ->where('retribution_type_id', $service->id)
-            ->exists();
-        
-        if (!$isRegistered) {
-            return response()->json([
-                'message' => 'Anda belum terdaftar pada layanan ini'
-            ], 403);
-        }
+            ->pluck('id');
 
-        $bills = Bill::where('taxpayer_id', $taxpayer->id)
-            ->where('retribution_type_id', $service->id)
-            ->with(['opd:id,name', 'retributionType:id,name,icon'])
+        $bills = Bill::whereIn('tax_object_id', $objectIds)
+            ->orWhere(function($q) use ($taxpayer, $service) {
+                $q->where('taxpayer_id', $taxpayer->id)
+                  ->where('retribution_type_id', $service->id)
+                  ->whereNull('tax_object_id');
+            })
+            ->with(['opd:id,name', 'retributionType:id,name,icon', 'taxObject'])
             ->latest()
             ->get();
 

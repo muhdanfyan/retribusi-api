@@ -20,6 +20,8 @@ class Verification extends Model
         'submitted_at',
         'verified_at',
         'proof_file_url',
+        'taxpayer_id',
+        'tax_object_id',
     ];
 
     protected $casts = [
@@ -40,5 +42,15 @@ class Verification extends Model
     public function verifier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'verifier_id');
+    }
+
+    public function taxObject(): BelongsTo
+    {
+        return $this->belongsTo(TaxObject::class);
+    }
+
+    public function taxpayer(): BelongsTo
+    {
+        return $this->belongsTo(Taxpayer::class);
     }
 }

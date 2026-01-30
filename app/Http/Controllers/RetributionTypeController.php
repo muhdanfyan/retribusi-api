@@ -23,8 +23,8 @@ class RetributionTypeController extends Controller
         $user = $request->user();
         $query = RetributionType::with('opd');
 
-        // OPD users only see their own retribution types (if logged in)
-        if ($user && $user->role === 'opd' && $user->opd_id) {
+        // All non-super-admins only see their own retribution types
+        if ($user && !$user->isSuperAdmin() && $user->opd_id) {
             $query->where('opd_id', $user->opd_id);
         }
 
@@ -51,13 +51,16 @@ class RetributionTypeController extends Controller
             'base_amount' => 'required|numeric|min:0',
             'unit' => 'required|string|max:50',
             'is_active' => 'boolean',
+            'form_schema' => 'nullable|string',
+            'requirements' => 'nullable|string',
         ]);
 
-        // Use user's OPD for OPD users, or require opd_id for super_admin
-        $opdId = $user->opd_id;
-        if ($user->role === 'super_admin') {
+        // Use user's OPD for non-super-admins, or require opd_id for super_admin
+        if ($user->isSuperAdmin()) {
             $request->validate(['opd_id' => 'required|exists:opds,id']);
             $opdId = $request->opd_id;
+        } else {
+            $opdId = $user->opd_id;
         }
 
         $iconUrl = $request->hasFile('icon')
@@ -72,6 +75,8 @@ class RetributionTypeController extends Controller
             'base_amount' => $request->base_amount,
             'unit' => $request->unit,
             'is_active' => $request->boolean('is_active', true),
+            'form_schema' => $request->form_schema ? json_decode($request->form_schema, true) : null,
+            'requirements' => $request->requirements ? json_decode($request->requirements, true) : null,
         ]);
 
         return response()->json([
@@ -87,8 +92,8 @@ class RetributionTypeController extends Controller
     {
         $user = $request->user();
 
-        // OPD users can only view their own
-        if ($user->role === 'opd' && $retributionType->opd_id !== $user->opd_id) {
+        // All non-super-admins can only view their own OPD's types
+        if (!$user->isSuperAdmin() && $retributionType->opd_id !== $user->opd_id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -104,14 +109,21 @@ class RetributionTypeController extends Controller
     {
         $user = $request->user();
 
-        // OPD users can only update their own
-        if ($user->role === 'opd' && $retributionType->opd_id !== $user->opd_id) {
+        // All non-super-admins can only update their own OPD's types
+        if (!$user->isSuperAdmin() && $retributionType->opd_id !== $user->opd_id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $data = $request->only([
             'name', 'category', 'base_amount', 'unit', 'is_active'
         ]);
+
+        if ($request->has('form_schema')) {
+            $data['form_schema'] = json_decode($request->form_schema, true);
+        }
+        if ($request->has('requirements')) {
+            $data['requirements'] = json_decode($request->requirements, true);
+        }
 
         if ($request->hasFile('icon')) {
             // Delete old icon if replaced
@@ -138,8 +150,8 @@ class RetributionTypeController extends Controller
     {
         $user = $request->user();
 
-        // OPD users can only delete their own
-        if ($user->role === 'opd' && $retributionType->opd_id !== $user->opd_id) {
+        // All non-super-admins can only delete their own OPD's types
+        if (!$user->isSuperAdmin() && $retributionType->opd_id !== $user->opd_id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

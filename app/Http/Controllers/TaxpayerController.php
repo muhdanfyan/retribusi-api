@@ -16,8 +16,8 @@ class TaxpayerController extends Controller
         $user = $request->user();
         $query = Taxpayer::with(['opd', 'retributionTypes']);
 
-        // OPD users only see their own taxpayers
-        if ($user->role === 'opd' && $user->opd_id) {
+        // All non-super-admins only see their own OPD's taxpayers
+        if (!$user->isSuperAdmin() && $user->opd_id) {
             $query->where('opd_id', $user->opd_id);
         }
 
@@ -59,11 +59,12 @@ class TaxpayerController extends Controller
             'retribution_type_ids.*' => 'exists:retribution_types,id',
         ]);
 
-        // Use user's OPD for OPD users, or require opd_id for super_admin
-        $opdId = $user->opd_id;
-        if ($user->role === 'super_admin') {
+        // Use user's OPD for non-super-admins, or require opd_id for super_admin
+        if ($user->isSuperAdmin()) {
             $request->validate(['opd_id' => 'required|exists:opds,id']);
             $opdId = $request->opd_id;
+        } else {
+            $opdId = $user->opd_id;
         }
 
         // Validate that retribution types belong to the same OPD
@@ -105,8 +106,8 @@ class TaxpayerController extends Controller
     {
         $user = $request->user();
 
-        // OPD users can only view their own
-        if ($user->role === 'opd' && $taxpayer->opd_id !== $user->opd_id) {
+        // All non-super-admins can only view their own OPD's taxpayers
+        if (!$user->isSuperAdmin() && $taxpayer->opd_id !== $user->opd_id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -122,8 +123,8 @@ class TaxpayerController extends Controller
     {
         $user = $request->user();
 
-        // OPD users can only update their own
-        if ($user->role === 'opd' && $taxpayer->opd_id !== $user->opd_id) {
+        // All non-super-admins can only update their own OPD's taxpayers
+        if (!$user->isSuperAdmin() && $taxpayer->opd_id !== $user->opd_id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -176,8 +177,8 @@ class TaxpayerController extends Controller
     {
         $user = $request->user();
 
-        // OPD users can only delete their own
-        if ($user->role === 'opd' && $taxpayer->opd_id !== $user->opd_id) {
+        // All non-super-admins can only delete their own OPD's taxpayers
+        if (!$user->isSuperAdmin() && $taxpayer->opd_id !== $user->opd_id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

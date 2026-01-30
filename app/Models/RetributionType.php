@@ -20,11 +20,15 @@ class RetributionType extends Model
         'base_amount',
         'unit',
         'is_active',
+        'form_schema',
+        'requirements',
     ];
 
     protected $casts = [
         'base_amount' => 'decimal:2',
         'is_active' => 'boolean',
+        'form_schema' => 'array',
+        'requirements' => 'array',
     ];
 
     /**
@@ -51,6 +55,14 @@ class RetributionType extends Model
     public function bills(): HasMany
     {
         return $this->hasMany(Bill::class);
+    }
+
+    /**
+     * Get all tax objects for this type
+     */
+    public function taxObjects(): HasMany
+    {
+        return $this->hasMany(TaxObject::class);
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bill;
 use App\Models\Taxpayer;
+use App\Models\TaxObject;
 use App\Models\RetributionType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -16,9 +17,9 @@ class BillController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $query = Bill::with(['retributionType', 'user', 'opd']);
+        $query = Bill::with(['retributionType', 'user', 'opd', 'taxObject', 'taxpayer']);
 
-        if ($user->role === 'opd' && $user->opd_id) {
+        if (!$user->isSuperAdmin() && $user->opd_id) {
             $query->where('opd_id', $user->opd_id);
         }
 
@@ -28,7 +29,12 @@ class BillController extends Controller
 
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where('bill_number', 'like', "%{$search}%");
+            $query->where(function($q) use ($search) {
+                $q->where('bill_number', 'like', "%{$search}%")
+                  ->orWhereHas('taxpayer', function($sq) use ($search) {
+                      $sq->where('name', 'like', "%{$search}%");
+                  });
+            });
         }
 
         $billings = $query->latest()->paginate($request->get('per_page', 15));
@@ -44,25 +50,26 @@ class BillController extends Controller
         $user = $request->user();
 
         $request->validate([
-            'taxpayer_id' => 'required|exists:taxpayers,id', // In real app, links to a user or taxpayer record
-            'retribution_type_id' => 'required|exists:retribution_types,id',
+            'tax_object_id' => 'required|exists:tax_objects,id',
             'amount' => 'required|numeric|min:0',
             'period' => 'required|string',
             'due_date' => 'required|date',
             'metadata' => 'nullable|array',
         ]);
 
-        $taxpayer = Taxpayer::find($request->taxpayer_id);
+        $taxObject = TaxObject::with('taxpayer')->find($request->tax_object_id);
         
         // Security check
-        if ($user->role === 'opd' && $taxpayer->opd_id !== $user->opd_id) {
+        if (!$user->isSuperAdmin() && $taxObject->opd_id !== $user->opd_id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $bill = Bill::create([
-            'user_id' => $user->id, // Created by this admin
-            'opd_id' => $taxpayer->opd_id,
-            'retribution_type_id' => $request->retribution_type_id,
+            'user_id' => $user->id,
+            'taxpayer_id' => $taxObject->taxpayer_id,
+            'tax_object_id' => $taxObject->id,
+            'opd_id' => $taxObject->opd_id,
+            'retribution_type_id' => $taxObject->retribution_type_id,
             'bill_number' => 'INV-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
             'amount' => $request->amount,
             'status' => 'pending',
@@ -73,12 +80,12 @@ class BillController extends Controller
 
         return response()->json([
             'message' => 'Tagihan berhasil dibuat',
-            'data' => $bill->load(['retributionType', 'opd'])
+            'data' => $bill->load(['retributionType', 'opd', 'taxObject'])
         ], 201);
     }
 
     /**
-     * Bulk generate bills for a retribution type
+     * Bulk generate bills for a retribution type based on tax objects
      */
     public function bulkStore(Request $request)
     {
@@ -92,23 +99,25 @@ class BillController extends Controller
 
         $type = RetributionType::find($request->retribution_type_id);
 
-        if ($user->role === 'opd' && $type->opd_id !== $user->opd_id) {
+        if (!$user->isSuperAdmin() && $type->opd_id !== $user->opd_id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        // Get all active taxpayers associated with this retribution type
-        $taxpayers = Taxpayer::whereHas('retributionTypes', function($q) use ($request) {
-            $q->where('retribution_types.id', $request->retribution_type_id);
-        })->where('is_active', true)->get();
+        // Get all active tax objects for this type
+        $objects = TaxObject::where('retribution_type_id', $type->id)
+            ->where('status', 'active')
+            ->get();
 
         $createdCount = 0;
-        foreach ($taxpayers as $taxpayer) {
+        foreach ($objects as $obj) {
             Bill::create([
                 'user_id' => $user->id,
+                'taxpayer_id' => $obj->taxpayer_id,
+                'tax_object_id' => $obj->id,
                 'opd_id' => $type->opd_id,
                 'retribution_type_id' => $type->id,
                 'bill_number' => 'INV-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
-                'amount' => $type->base_amount, // Or custom amount from pivot if implemented
+                'amount' => $type->base_amount, 
                 'status' => 'pending',
                 'period' => $request->period,
                 'due_date' => $request->due_date,
@@ -129,12 +138,12 @@ class BillController extends Controller
     {
         $user = $request->user();
         
-        if ($user->role === 'opd' && $bill->opd_id !== $user->opd_id) {
+        if (!$user->isSuperAdmin() && $bill->opd_id !== $user->opd_id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         return response()->json([
-            'data' => $bill->load(['retributionType', 'opd', 'payments'])
+            'data' => $bill->load(['retributionType', 'opd', 'payments', 'taxObject', 'taxpayer'])
         ]);
     }
 
@@ -147,7 +156,7 @@ class BillController extends Controller
             'nik' => 'required|string',
         ]);
 
-        $bills = \App\Models\Bill::with(['retributionType', 'opd'])
+        $bills = Bill::with(['retributionType', 'opd', 'taxObject'])
             ->whereHas('taxpayer', function($q) use ($request) {
                 $q->where('nik', $request->nik);
             })

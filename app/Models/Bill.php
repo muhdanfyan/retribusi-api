@@ -11,6 +11,7 @@ class Bill extends Model
     protected $fillable = [
         'user_id',
         'taxpayer_id',
+        'tax_object_id',
         'opd_id',
         'retribution_type_id',
         'bill_number',
@@ -44,6 +45,11 @@ class Bill extends Model
     public function retributionType(): BelongsTo
     {
         return $this->belongsTo(RetributionType::class);
+    }
+
+    public function taxObject(): BelongsTo
+    {
+        return $this->belongsTo(TaxObject::class);
     }
 
     public function payments(): HasMany

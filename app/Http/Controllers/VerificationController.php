@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Verification;
+use App\Models\TaxObject;
 use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -33,8 +34,13 @@ class VerificationController extends Controller
 
         $proofFileUrl = $this->cloudinary->upload($request->file('proof_file'), 'verifications');
 
+        $opdId = $request->opd_id;
+        if (!$user->isSuperAdmin()) {
+            $opdId = $user->opd_id;
+        }
+
         $verification = Verification::create([
-            'opd_id' => $request->opd_id,
+            'opd_id' => $opdId,
             'user_id' => $user->id,
             'document_number' => 'VRC-' . strtoupper(uniqid()),
             'taxpayer_name' => $request->taxpayer_name,
@@ -48,17 +54,18 @@ class VerificationController extends Controller
         return response()->json([
             'message' => 'Permintaan verifikasi berhasil dikirim',
             'data' => $verification->load(['opd', 'submitter'])
-        ], 210);
+        ], 201);
     }
+
     /**
      * List verifications (OPD-scoped)
      */
     public function index(Request $request)
     {
         $user = $request->user();
-        $query = Verification::with(['opd', 'submitter', 'verifier']);
+        $query = Verification::with(['opd', 'submitter', 'verifier', 'taxObject']);
 
-        if ($user->role === 'opd' && $user->opd_id) {
+        if (!$user->isSuperAdmin() && $user->opd_id) {
             $query->where('opd_id', $user->opd_id);
         }
 
@@ -87,7 +94,7 @@ class VerificationController extends Controller
         $user = $request->user();
 
         // Authority check
-        if ($user->role === 'opd' && $verification->opd_id !== $user->opd_id) {
+        if (!$user->isSuperAdmin() && $verification->opd_id !== $user->opd_id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -103,9 +110,27 @@ class VerificationController extends Controller
             'verified_at' => in_array($request->status, ['approved', 'rejected']) ? Carbon::now() : null,
         ]);
 
+        // If this is an object registration and it's approved, activate the object
+        if ($request->status === 'approved' && $verification->tax_object_id) {
+            $taxObject = TaxObject::find($verification->tax_object_id);
+            if ($taxObject) {
+                $taxObject->update([
+                    'status' => 'active',
+                    'approved_at' => Carbon::now(),
+                ]);
+            }
+        }
+
+        if ($request->status === 'rejected' && $verification->tax_object_id) {
+            $taxObject = TaxObject::find($verification->tax_object_id);
+            if ($taxObject) {
+                $taxObject->update(['status' => 'rejected']);
+            }
+        }
+
         return response()->json([
             'message' => "Dokumen berhasil di-{$request->status}",
-            'data' => $verification->load(['opd', 'submitter', 'verifier'])
+            'data' => $verification->load(['opd', 'submitter', 'verifier', 'taxObject'])
         ]);
     }
 
@@ -116,12 +141,12 @@ class VerificationController extends Controller
     {
         $user = $request->user();
         
-        if ($user->role === 'opd' && $verification->opd_id !== $user->opd_id) {
+        if (!$user->isSuperAdmin() && $verification->opd_id !== $user->opd_id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         return response()->json([
-            'data' => $verification->load(['opd', 'submitter', 'verifier'])
+            'data' => $verification->load(['opd', 'submitter', 'verifier', 'taxObject', 'taxpayer'])
         ]);
     }
 }
