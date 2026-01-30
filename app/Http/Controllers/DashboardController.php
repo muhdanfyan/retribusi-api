@@ -6,6 +6,7 @@ use App\Models\Bill;
 use App\Models\Payment;
 use App\Models\Taxpayer;
 use App\Models\Opd;
+use App\Models\TaxObject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -105,17 +106,25 @@ class DashboardController extends Controller
     public function getMapPotentials(Request $request)
     {
         $user = $request->user();
-        $opdId = $user->role === 'opd' ? $user->opd_id : null;
+        $opdId = !$user->isSuperAdmin() ? $user->opd_id : null;
+        
+        $query = TaxObject::with(['opd', 'retributionType'])
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude');
 
-        // In a real scenario, Taxpayers or Objects should have lat/long.
-        // For now, we return mock positions based on existing OPDs/Taxpayers
-        // to match the Dashboard.tsx Leaflet map requirements.
-        $potentials = [
-            ['position' => [-5.47, 122.6], 'name' => 'Retribusi Parkir', 'agency' => 'Dishub'],
-            ['position' => [-5.48, 122.61], 'name' => 'Retribusi Pelayanan Pasar', 'agency' => 'Disperindag'],
-            ['position' => [-5.46, 122.59], 'name' => 'Retribusi IMB/PBG', 'agency' => 'DPMPTSP'],
-            ['position' => [-5.475, 122.605], 'name' => 'Retribusi Tempat Rekreasi', 'agency' => 'Disparekraf'],
-        ];
+        if ($opdId) {
+            $query->where('opd_id', $opdId);
+        }
+
+        $potentials = $query->get()->map(function($obj) {
+            return [
+                'position' => [(float)$obj->latitude, (float)$obj->longitude],
+                'name' => $obj->name . ' (' . ($obj->retributionType->name ?? 'N/A') . ')',
+                'agency' => $obj->opd->name ?? 'N/A',
+                'address' => $obj->address,
+                'status' => $obj->status,
+            ];
+        });
 
         return response()->json($potentials);
     }

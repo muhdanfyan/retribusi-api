@@ -59,9 +59,12 @@ class UserController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
-            'opd_id' => $validated['opd_id'],
+            'opd_id' => $validated['opd_id'] ?: null,
             'status' => $validated['status'],
         ]);
+
+        $user->load('opd');
+        $user->department = $user->opd?->name ?? 'All';
 
         return response()->json($user, 201);
     }
@@ -117,6 +120,9 @@ class UserController extends Controller
             // Also update the associated OPD email
             \App\Models\Opd::where('id', $user->opd_id)->update(['email' => $validated['email']]);
         }
+
+        $user->load('opd');
+        $user->department = $user->opd?->name ?? 'All';
 
         return response()->json($user);
     }

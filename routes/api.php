@@ -11,6 +11,7 @@ use App\Http\Controllers\BillController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\ZoneController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PaymentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,6 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Billings
     Route::post('/bills/bulk', [BillController::class, 'bulkStore']);
     Route::apiResource('bills', BillController::class)->except(['update', 'destroy']);
+    Route::post('/bills/{bill}/pay', [PaymentController::class, 'store']);
     
     // Verifications
     Route::put('/verifications/{verification}/status', [VerificationController::class, 'updateStatus']);
