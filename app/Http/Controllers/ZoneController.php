@@ -7,23 +7,34 @@ use Illuminate\Http\Request;
 
 class ZoneController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Zone::all());
+        $query = Zone::with(['opd', 'retributionType']);
+
+        if ($request->has('opd_id')) {
+            $query->where('opd_id', $request->opd_id);
+        }
+
+        return response()->json($query->get());
     }
 
     public function store(Request $request)
     {
         $request->validate([
+            'opd_id' => 'required|exists:opds,id',
+            'retribution_type_id' => 'required|exists:retribution_types,id',
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:10|unique:zones',
             'multiplier' => 'required|numeric|min:0',
+            'amount' => 'required|numeric|min:0',
             'description' => 'nullable|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
         ]);
 
         $zone = Zone::create($request->all());
 
-        return response()->json($zone, 201);
+        return response()->json($zone->load(['opd', 'retributionType']), 201);
     }
 
     public function show(Zone $zone)
@@ -34,15 +45,20 @@ class ZoneController extends Controller
     public function update(Request $request, Zone $zone)
     {
         $request->validate([
+            'opd_id' => 'sometimes|exists:opds,id',
+            'retribution_type_id' => 'sometimes|exists:retribution_types,id',
             'name' => 'sometimes|string|max:255',
             'code' => 'sometimes|string|max:10|unique:zones,code,' . $zone->id,
             'multiplier' => 'sometimes|numeric|min:0',
+            'amount' => 'sometimes|numeric|min:0',
             'description' => 'nullable|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
         ]);
 
         $zone->update($request->all());
 
-        return response()->json($zone);
+        return response()->json($zone->load(['opd', 'retributionType']));
     }
 
     public function destroy(Zone $zone)

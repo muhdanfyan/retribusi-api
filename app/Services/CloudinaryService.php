@@ -16,11 +16,14 @@ class CloudinaryService
      */
     public function upload(UploadedFile $file, string $folder = 'retribusi'): string
     {
-        $result = Cloudinary::upload($file->getRealPath(), [
+        /** @var \Cloudinary\Cloudinary $cloudinary */
+        $cloudinary = app(\Cloudinary\Cloudinary::class);
+        
+        $result = $cloudinary->uploadApi()->upload($file->getRealPath(), [
             'folder' => $folder
         ]);
         
-        return $result->getSecurePath();
+        return $result['secure_url'];
     }
 
     /**
@@ -34,35 +37,37 @@ class CloudinaryService
         if (!$url) return false;
 
         try {
+            /** @var \Cloudinary\Cloudinary $cloudinary */
+            $cloudinary = app(\Cloudinary\Cloudinary::class);
+
             // Extract public ID from URL
-            // Example: https://res.cloudinary.com/cloud_name/image/upload/v12345/folder/id.jpg
             $path = parse_url($url, PHP_URL_PATH);
             $segments = explode('/', $path);
             
-            // The public ID is typically the last segments after 'upload/v...'
-            // This is a simplified version, cloudinary-laravel has smarter ways but this is robust for basic use
-            $idWithExtension = end($segments);
-            $publicId = pathinfo($idWithExtension, PATHINFO_FILENAME);
-            
-            // If there are folders, we need those too
-            $folderSegments = [];
+            // Public ID is everything after 'upload/v...'
             $foundUpload = false;
+            $publicIdSegments = [];
             foreach ($segments as $segment) {
                 if ($foundUpload) {
-                    $folderSegments[] = $segment;
+                    $publicIdSegments[] = $segment;
                 }
-                if (strpos($segment, 'upload') === 0 || preg_match('/^v\d+$/', $segment)) {
-                    // skip 'upload' and version segment
-                    if (strpos($segment, 'upload') === 0) $foundUpload = true;
-                    continue; 
+                if (strpos($segment, 'upload') === 0) {
+                    $foundUpload = true;
+                    // skip version segment if it follows
                 }
             }
-            
-            // public_id includes the folder structure
-            $fullPublicId = implode('/', array_slice($folderSegments, 1)); // skip version if it was there
-            $fullPublicId = pathinfo($fullPublicId, PATHINFO_FILENAME);
 
-            return Cloudinary::destroy($fullPublicId);
+            // Remove version segment (v1234567) if present
+            if (!empty($publicIdSegments) && str_starts_with($publicIdSegments[0], 'v') && is_numeric(substr($publicIdSegments[0], 1))) {
+                array_shift($publicIdSegments);
+            }
+
+            $fullPublicId = implode('/', $publicIdSegments);
+            $fullPublicId = pathinfo($fullPublicId, PATHINFO_DIRNAME) . '/' . pathinfo($fullPublicId, PATHINFO_FILENAME);
+            $fullPublicId = ltrim($fullPublicId, './');
+
+            $cloudinary->adminApi()->deleteAssets([$fullPublicId]);
+            return true;
         } catch (\Exception $e) {
             return false;
         }
