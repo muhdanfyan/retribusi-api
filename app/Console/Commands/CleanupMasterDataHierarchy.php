@@ -85,6 +85,11 @@ class CleanupMasterDataHierarchy extends Command
                     'retribution_type_id' => $type->id
                 ]);
 
+                // Update Pivot Table
+                \DB::table('taxpayer_retribution_type')->where('retribution_type_id', $id)->update([
+                    'retribution_type_id' => $type->id
+                ]);
+
                 $this->info("Updated dependencies for {$misType->name}");
 
                 // Finally delete the misclassified type
