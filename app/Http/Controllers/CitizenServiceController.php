@@ -113,11 +113,24 @@ class CitizenServiceController extends Controller
             $metadata = json_decode($metadata, true) ?: [];
         }
 
-        if ($request->hasFile('foto_lokasi_open_kamera')) {
+        // Handle dynamic document uploads based on requirements
+        $requirements = $service->requirements ?: [];
+        foreach ($requirements as $req) {
+            $key = $req['key'] ?? null;
+            if ($key && $request->hasFile($key)) {
+                $metadata[$key] = $cloudinary->upload(
+                    $request->file($key), 
+                    'citizen/documents/' . $service->id
+                );
+            }
+        }
+
+        // Backward compatibility for old hardcoded fields if they exist in request but not in requirements
+        if ($request->hasFile('foto_lokasi_open_kamera') && !isset($metadata['foto_lokasi_open_kamera'])) {
             $metadata['foto_lokasi_open_kamera'] = $cloudinary->upload($request->file('foto_lokasi_open_kamera'), 'taxpayers/survey');
         }
         
-        if ($request->hasFile('formulir_data_dukung')) {
+        if ($request->hasFile('formulir_data_dukung') && !isset($metadata['formulir_data_dukung'])) {
             $metadata['formulir_data_dukung'] = $cloudinary->upload($request->file('formulir_data_dukung'), 'taxpayers/docs');
         }
 

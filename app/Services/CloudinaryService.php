@@ -16,14 +16,24 @@ class CloudinaryService
      */
     public function upload(UploadedFile $file, string $folder = 'retribusi'): string
     {
-        /** @var \Cloudinary\Cloudinary $cloudinary */
-        $cloudinary = app(\Cloudinary\Cloudinary::class);
-        
-        $result = $cloudinary->uploadApi()->upload($file->getRealPath(), [
-            'folder' => $folder
-        ]);
-        
-        return $result['secure_url'];
+        try {
+            /** @var \Cloudinary\Cloudinary $cloudinary */
+            $cloudinary = app(\Cloudinary\Cloudinary::class);
+            
+            $result = $cloudinary->uploadApi()->upload($file->getRealPath(), [
+                'folder' => $folder,
+                'resource_type' => 'auto', // auto-detect file type (image, video, raw)
+            ]);
+            
+            return $result['secure_url'];
+        } catch (\Exception $e) {
+            \Log::error('Cloudinary upload failed: ' . $e->getMessage(), [
+                'file' => $file->getClientOriginalName(),
+                'mime' => $file->getMimeType(),
+                'size' => $file->getSize(),
+            ]);
+            throw new \Exception('Gagal upload file: ' . $e->getMessage());
+        }
     }
 
     /**
