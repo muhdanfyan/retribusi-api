@@ -9,13 +9,16 @@ class ZoneController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Zone::with(['opd', 'retributionType']);
+        $user = $request->user();
+        $query = Zone::with(['opd', 'retributionType', 'classification']);
 
-        if ($request->has('opd_id')) {
+        if ($user && in_array($user->role, ['opd', 'kasir'])) {
+            $query->where('opd_id', $user->opd_id);
+        } elseif ($request->has('opd_id')) {
             $query->where('opd_id', $request->opd_id);
         }
 
-        return response()->json($query->get());
+        return response()->json(['data' => $query->get()]);
     }
 
     public function store(Request $request)

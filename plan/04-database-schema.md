@@ -121,7 +121,7 @@ CREATE TABLE users (
 );
 ```
 
-### 2. revenue_types (Jenis Pajak/Retribusi)
+### 2. revenue_types (Jenis Retribusi/Pajak)
 > **Note**: Di database fisik menggunakan nama tabel `retribution_types`.
 
 ```sql

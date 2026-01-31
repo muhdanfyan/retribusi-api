@@ -27,7 +27,7 @@
 - [ ] Implementasi model Eloquent dengan relationships
 
 ### 1.2 Master Data
-- [ ] Seed tax_types dengan 6 jenis pajak/retribusi
+- [ ] Seed tax_types dengan 6 jenis retribusi/pajak
 - [ ] Seed lokasi objek retribusi (Pantai Kamali, Kota Mara, dll)
 - [ ] Setup tarif sesuai Perwali
 

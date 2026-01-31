@@ -8,7 +8,7 @@
 > [!IMPORTANT]
 > **Cakupan Sistem Saat Ini**
 > 
-> Sistem ini **khusus mengelola data yang dimiliki BAPENDA (Badan Pendapatan Daerah)** Kota Bau-Bau. Data dan objek pajak/retribusi yang diimplementasikan adalah yang berada di bawah pengelolaan langsung BAPENDA.
+> Sistem ini **khusus mengelola data yang dimiliki BAPENDA (Badan Pendapatan Daerah)** Kota Bau-Bau. Data dan objek retribusi/pajak yang diimplementasikan adalah yang berada di bawah pengelolaan langsung BAPENDA.
 
 ---
 

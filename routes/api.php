@@ -12,6 +12,8 @@ use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\ZoneController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\RetributionClassificationController;
+use App\Http\Controllers\RetributionRateController;
 
 /*
 |--------------------------------------------------------------------------
@@ -61,6 +63,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Zones
     Route::apiResource('zones', ZoneController::class);
+
+    // Retribution Classifications
+    Route::apiResource('retribution-classifications', RetributionClassificationController::class);
+
+    // Retribution Rates
+    Route::apiResource('retribution-rates', RetributionRateController::class);
 
     // OPD Management (super_admin only in controller)
     Route::apiResource('opds', OpdController::class)->except(['create', 'edit', 'index']);

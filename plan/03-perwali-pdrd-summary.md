@@ -1,5 +1,5 @@
 # Ringkasan Perwali Tata Cara Pemungutan PDRD
-## Peraturan Walikota tentang Tata Cara Pemungutan Pajak Daerah dan Retribusi Daerah
+## Peraturan Walikota tentang Tata Cara Pemungutan Retribusi Daerah dan Pajak Daerah
 
 > **Catatan**: Dokumen ini merupakan template ringkasan yang harus dilengkapi berdasarkan isi dokumen "Perwali Tata Cara Pemungutan PDRD un Sil.pdf"
 

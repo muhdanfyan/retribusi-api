@@ -65,6 +65,16 @@ class DatabaseSeeder extends Seeder
             'is_active' => true,
         ]);
 
+        $bapenda = Opd::create([
+            'name' => 'Badan Pendapatan Daerah',
+            'code' => 'BAPENDA',
+            'address' => 'Jl. Bapenda No. 1',
+            'phone' => '0401-999888',
+            'email' => 'bapenda@baubau.go.id',
+            'status' => 'approved',
+            'is_active' => true,
+        ]);
+
         // Create OPD admin users
         User::create([
             'name' => 'Admin Dishub',
@@ -93,13 +103,21 @@ class DatabaseSeeder extends Seeder
             'status' => 'active',
         ]);
 
-        // Create Kasir Bapenda (OPD ID 7)
+        User::create([
+            'name' => 'Admin BAPENDA',
+            'email' => 'admin@bapenda.go.id',
+            'password' => Hash::make('password123'),
+            'role' => 'opd',
+            'opd_id' => $bapenda->id,
+            'status' => 'active',
+        ]);
+
         User::create([
             'name' => 'Kasir BAPENDA',
             'email' => 'kasir@bapenda.go.id',
             'password' => Hash::make('password123'),
             'role' => 'kasir',
-            'opd_id' => 7,
+            'opd_id' => $bapenda->id,
             'status' => 'active',
         ]);
 
@@ -205,6 +223,9 @@ class DatabaseSeeder extends Seeder
             'is_active' => true,
         ]);
         $wp3->retributionTypes()->attach([$sampah->id]);
+
+        // Run BAPENDA Master Data Seeder
+        $this->call(BapendaMasterDataSeeder::class);
 
         $this->command->info('Database seeded successfully!');
         $this->command->info('Super Admin: admin@retribusi.id / password123');

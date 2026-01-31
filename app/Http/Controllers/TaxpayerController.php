@@ -47,7 +47,7 @@ class TaxpayerController extends Controller
         $user = $request->user();
 
         $request->validate([
-            'nik' => 'required|string|size:16',
+            'nik' => 'nullable|string|size:16',
             'name' => 'required|string|max:255',
             'address' => 'nullable|string',
             'phone' => 'nullable|string|max:20',
@@ -129,7 +129,7 @@ class TaxpayerController extends Controller
         }
 
         $request->validate([
-            'nik' => 'sometimes|string|size:16',
+            'nik' => 'nullable|string|size:16',
             'name' => 'sometimes|string|max:255',
             'address' => 'nullable|string',
             'phone' => 'nullable|string|max:20',
