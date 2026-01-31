@@ -1,0 +1,17 @@
+#!/usr/bin/expect -f
+set timeout 120
+set password "Sipanda123#"
+spawn ssh -o StrictHostKeyChecking=no sipanda@157.10.252.74
+expect "password:"
+send "$password\r"
+expect "$ "
+send "cd /home/sipanda/retribusi-api\r"
+expect "$ "
+send "git pull origin main\r"
+expect "$ "
+send "php artisan migrate --force\r"
+expect "$ "
+send "php artisan app:cleanup-master-data-hierarchy\r"
+expect "$ "
+send "exit\r"
+expect eof

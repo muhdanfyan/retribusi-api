@@ -75,14 +75,17 @@ class CleanupMasterDataHierarchy extends Command
                 );
 
                 // Update existing Tax Objects to point to the new Type and Zone
-                $count = \App\Models\TaxObject::where('retribution_type_id', $id)->count();
-                if ($count > 0) {
-                    \App\Models\TaxObject::where('retribution_type_id', $id)->update([
-                        'retribution_type_id' => $type->id,
-                        'zone_id' => $zone->id
-                    ]);
-                    $this->info("Updated {$count} Tax Objects for {$misType->name}");
-                }
+                \App\Models\TaxObject::where('retribution_type_id', $id)->update([
+                    'retribution_type_id' => $type->id,
+                    'zone_id' => $zone->id
+                ]);
+
+                // Update existing Bills to avoid foreign key violations
+                \App\Models\Bill::where('retribution_type_id', $id)->update([
+                    'retribution_type_id' => $type->id
+                ]);
+
+                $this->info("Updated dependencies for {$misType->name}");
 
                 // Finally delete the misclassified type
                 $misType->delete();
