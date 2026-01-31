@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('taxpayers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('opd_id')->constrained()->onDelete('cascade');
-            $table->string('nik', 16);
+            $table->string('nik', 16)->nullable();
             $table->string('name');
             $table->text('address')->nullable();
             $table->string('phone')->nullable();

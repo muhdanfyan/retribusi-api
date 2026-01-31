@@ -12,6 +12,7 @@ class TaxObject extends Model
     use HasFactory;
 
     protected $fillable = [
+        'nop',
         'taxpayer_id',
         'retribution_type_id',
         'opd_id',

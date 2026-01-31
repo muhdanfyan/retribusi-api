@@ -93,6 +93,16 @@ class DatabaseSeeder extends Seeder
             'status' => 'active',
         ]);
 
+        // Create Kasir Bapenda (OPD ID 7)
+        User::create([
+            'name' => 'Kasir BAPENDA',
+            'email' => 'kasir@bapenda.go.id',
+            'password' => Hash::make('password123'),
+            'role' => 'kasir',
+            'opd_id' => 7,
+            'status' => 'active',
+        ]);
+
         // Create retribution types for Dishub
         $parkirMobil = RetributionType::create([
             'opd_id' => $dishub->id,

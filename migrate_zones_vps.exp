@@ -1,0 +1,46 @@
+#!/usr/bin/expect -f
+set timeout 60
+set password "Sipanda123#"
+spawn ssh -o StrictHostKeyChecking=no sipanda@157.10.252.74
+expect "password:"
+send "$password\r"
+expect "$ "
+send "cd /home/sipanda/retribusi-api\r"
+expect "$ "
+send "php artisan tinker --execute=\"
+// 1. Create High Level Type if not exists
+\\\$type = App\\\\Models\\\\RetributionType::firstOrCreate(
+    ['name' => 'Retribusi Pemakaian Kekayaan Daerah'],
+    ['opd_id' => 7, 'category' => 'Retribusi Jasa Usaha', 'base_amount' => 0]
+);
+
+// 2. Identify and Move misclassified types to Zones
+\\\$ids = [21, 22, 23, 24, 25];
+foreach (\\\$ids as \\\$id) {
+    \\\$misType = App\\\\Models\\\\RetributionType::find(\\\$id);
+    if (\\\$misType) {
+        echo 'Moving ' . \\\$misType->name . PHP_EOL;
+        
+        // Create Zone
+        App\\\\Models\\\\Zone::updateOrCreate(
+            ['name' => \\\$misType->name],
+            [
+                'opd_id' => \\\$misType->opd_id,
+                'retribution_type_id' => \\\$type->id,
+                'description' => 'Migrated from RetributionType'
+            ]
+        );
+
+        // Update dependencies (Tax Objects)
+        App\\\\Models\\\\TaxObject::where('retribution_type_id', \\\$id)->update([
+            'retribution_type_id' => \\\$type->id
+        ]);
+
+        // Delete the misclassified type
+        \\\$misType->delete();
+    }
+}
+\"\r"
+expect "$ "
+send "exit\r"
+expect eof

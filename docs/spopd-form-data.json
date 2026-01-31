@@ -1,0 +1,760 @@
+{
+    "spopd_forms": {
+        "metadata": {
+            "issuer": "Badan Pendapatan Daerah",
+            "government": "Pemerintah Kota Bau-Bau",
+            "document_name": "Surat Pendaftaran Objek Pajak Daerah (SPOPD)",
+            "version": "2026"
+        },
+        "tax_types": [
+            {
+                "code": "tenaga_listrik",
+                "name": "PBJT Atas Tenaga Listrik",
+                "page": 11
+            },
+            {
+                "code": "kesenian_hiburan",
+                "name": "PBJT Atas Jasa Kesenian dan Hiburan",
+                "page": 7
+            },
+            {
+                "code": "air_tanah",
+                "name": "Pajak Air Tanah",
+                "page": 14
+            },
+            {
+                "code": "parkir",
+                "name": "PBJT Atas Jasa Parkir",
+                "page": 12
+            },
+            {
+                "code": "perhotelan",
+                "name": "PBJT Atas Jasa Perhotelan",
+                "page": "3D"
+            }
+        ],
+        "transaction_types": [
+            {
+                "code": "perekaman_data",
+                "name": "Perekaman Data",
+                "description": "Pendaftaran objek pajak baru"
+            },
+            {
+                "code": "pemutakhiran_data",
+                "name": "Pemutakhiran Data",
+                "description": "Update data objek pajak existing"
+            },
+            {
+                "code": "penghapusan_data",
+                "name": "Penghapusan Data",
+                "description": "Hapus/non-aktifkan objek pajak"
+            }
+        ],
+        "shared_fields": {
+            "header": {
+                "nomor_formulir": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "label": "Nomor Formulir"
+                },
+                "jenis_transaksi": {
+                    "type": "enum",
+                    "options": [
+                        "perekaman_data",
+                        "pemutakhiran_data",
+                        "penghapusan_data"
+                    ],
+                    "label": "Jenis Transaksi"
+                }
+            },
+            "subjek_pajak": {
+                "npwpd": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "format": "XX-XX-XXXX-XXXXXXX",
+                    "label": "NPWPD"
+                },
+                "npwpd_lama": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "nullable": true,
+                    "label": "NPWPD Lama"
+                },
+                "nama_usaha": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "label": "Nama Usaha"
+                },
+                "alamat_usaha": {
+                    "type": "text",
+                    "label": "Alamat Usaha"
+                },
+                "nama_pemilik_pengelola": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "label": "Nama Pemilik/Pengelola"
+                },
+                "nik_pemilik_pengelola": {
+                    "type": "string",
+                    "maxLength": 16,
+                    "label": "NIK Pemilik/Pengelola"
+                },
+                "alamat_pemilik_pengelola": {
+                    "type": "text",
+                    "label": "Alamat Pemilik/Pengelola"
+                },
+                "nomor_telepon": {
+                    "type": "string",
+                    "maxLength": 15,
+                    "label": "Nomor Telepon"
+                },
+                "alamat_email": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "format": "email",
+                    "label": "Alamat E-Mail"
+                }
+            },
+            "pernyataan_subjek_pajak": {
+                "nama_subjek_pajak": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "label": "Nama Subjek Pajak"
+                },
+                "tanggal_pernyataan": {
+                    "type": "date",
+                    "label": "Tanggal"
+                },
+                "tanda_tangan": {
+                    "type": "signature",
+                    "label": "Tanda Tangan"
+                }
+            },
+            "identitas_pendata_pejabat": {
+                "petugas_pendata": {
+                    "tanggal": {
+                        "type": "date",
+                        "label": "Tanggal"
+                    },
+                    "tanda_tangan": {
+                        "type": "signature",
+                        "label": "Tanda Tangan"
+                    },
+                    "nama_jelas": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "label": "Nama Jelas"
+                    },
+                    "nip": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "label": "NIP"
+                    }
+                },
+                "pejabat_berwenang": {
+                    "tanggal": {
+                        "type": "date",
+                        "label": "Tanggal"
+                    },
+                    "tanda_tangan": {
+                        "type": "signature",
+                        "label": "Tanda Tangan"
+                    },
+                    "nama_jelas": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "label": "Nama Jelas"
+                    },
+                    "nip": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "label": "NIP"
+                    }
+                }
+            }
+        },
+        "specific_fields": {
+            "tenaga_listrik": {
+                "objek_pajak": {
+                    "golongan_usaha": {
+                        "type": "enum",
+                        "options": [
+                            {
+                                "code": "non_industri_pertambangan",
+                                "label": "Non Industri/Pertambangan"
+                            },
+                            {
+                                "code": "industri",
+                                "label": "Industri"
+                            },
+                            {
+                                "code": "pertambangan",
+                                "label": "Pertambangan"
+                            },
+                            {
+                                "code": "sosial",
+                                "label": "Sosial"
+                            }
+                        ],
+                        "label": "Golongan Usaha"
+                    },
+                    "mesin_pembangkit_listrik": {
+                        "nama_tipe": {
+                            "type": "string",
+                            "maxLength": 100,
+                            "label": "Nama/Tipe"
+                        },
+                        "kapasitas_batas_daya": {
+                            "type": "integer",
+                            "unit": "VA",
+                            "label": "Kapasitas/Batas Daya"
+                        }
+                    },
+                    "penggunaan": {
+                        "type": "enum",
+                        "options": [
+                            {
+                                "code": "sumber_listrik_utama",
+                                "label": "Sumber Listrik Utama"
+                            },
+                            {
+                                "code": "sumber_listrik_cadangan",
+                                "label": "Sumber Listrik Cadangan"
+                            },
+                            {
+                                "code": "sumber_listrik_darurat",
+                                "label": "Sumber Listrik Darurat"
+                            }
+                        ],
+                        "label": "Penggunaan"
+                    }
+                }
+            },
+            "kesenian_hiburan": {
+                "objek_pajak": {
+                    "jenis_hiburan": {
+                        "type": "array",
+                        "multiple": true,
+                        "options": [
+                            {
+                                "code": "bioskop_tradisional_film",
+                                "label": "Kibenian Tradisional, Film (Bioskop/Keliling)"
+                            },
+                            {
+                                "code": "diskotik_klub_malam",
+                                "label": "Diskotik/Klub Malam"
+                            },
+                            {
+                                "code": "sirkus_pameran_seni",
+                                "label": "Sirkus/Pameran Seni"
+                            },
+                            {
+                                "code": "fitness_kebugaran_sanggar_senam",
+                                "label": "Fitness Centre/Kebugaran, Sanggar Senam"
+                            },
+                            {
+                                "code": "karaoke",
+                                "label": "Karaoke"
+                            },
+                            {
+                                "code": "permainan_bilyard",
+                                "label": "Permainan Bilyard"
+                            },
+                            {
+                                "code": "pertunjukan_musik_tari_pameran_busana",
+                                "label": "Pertunjukan Musik/Tari, Pameran Busana, Kontes Kecantikan"
+                            },
+                            {
+                                "code": "permainan_ketangkasan",
+                                "label": "Permainan Ketangkasan"
+                            },
+                            {
+                                "code": "pertandingan_olahraga",
+                                "label": "Pertandingan Olahraga"
+                            }
+                        ],
+                        "label": "Jenis Kesenian dan Hiburan yang Diselenggarakan"
+                    },
+                    "waktu_pertunjukan": {
+                        "type": "enum",
+                        "options": [
+                            {
+                                "code": "berjadwal_tetap_reguler",
+                                "label": "Berjadwal Tetap/Reguler"
+                            },
+                            {
+                                "code": "insidental",
+                                "label": "Insidental"
+                            }
+                        ],
+                        "label": "Waktu Pertunjukan"
+                    },
+                    "penyelenggaraan_hiburan_insidental": {
+                        "judul_pertunjukan": {
+                            "type": "string",
+                            "maxLength": 200,
+                            "label": "Judul Pertunjukan"
+                        },
+                        "jumlah_kursi_penonton": {
+                            "type": "integer",
+                            "label": "Jumlah Kursi/Penonton"
+                        },
+                        "jumlah_hari_pertunjukan": {
+                            "type": "integer",
+                            "label": "Jumlah Hari Pertunjukan"
+                        }
+                    },
+                    "jenis_kelas_tiket_tarif": {
+                        "type": "array",
+                        "items": {
+                            "no": {
+                                "type": "integer",
+                                "label": "No"
+                            },
+                            "jenis_kelas": {
+                                "type": "string",
+                                "maxLength": 50,
+                                "label": "Jenis/Kelas"
+                            },
+                            "jumlah": {
+                                "type": "integer",
+                                "label": "Jumlah"
+                            },
+                            "tarif_rp": {
+                                "type": "decimal",
+                                "precision": 15,
+                                "scale": 2,
+                                "label": "Tarif (Rp)"
+                            }
+                        },
+                        "label": "Jenis/Kelas Tiket dan Tarif"
+                    },
+                    "hiburan_tradisional_film": {
+                        "jumlah_kursi": {
+                            "type": "integer",
+                            "label": "Jumlah Kursi"
+                        },
+                        "jumlah_pertunjukan": {
+                            "type": "integer",
+                            "label": "Jumlah Pertunjukan"
+                        }
+                    },
+                    "hiburan_bilyard_video_games": {
+                        "jumlah_meja_mesin": {
+                            "type": "integer",
+                            "label": "Jumlah Meja/Mesin"
+                        },
+                        "jam_buka": {
+                            "type": "time",
+                            "label": "Jam Buka"
+                        },
+                        "jam_tutup": {
+                            "type": "time",
+                            "label": "s/d"
+                        },
+                        "tarif_rp": {
+                            "type": "decimal",
+                            "precision": 15,
+                            "scale": 2,
+                            "label": "Tarif (Rp)"
+                        },
+                        "per": {
+                            "type": "string",
+                            "label": "Per"
+                        }
+                    },
+                    "hiburan_diskotik_klub_malam": {
+                        "kapasitas": {
+                            "type": "integer",
+                            "unit": "orang",
+                            "label": "Kapasitas"
+                        },
+                        "tarif_rp": {
+                            "type": "decimal",
+                            "precision": 15,
+                            "scale": 2,
+                            "label": "Tarif (Rp)"
+                        }
+                    },
+                    "hiburan_pusat_kebugaran_sanggar_senam": {
+                        "kapasitas": {
+                            "type": "integer",
+                            "unit": "orang",
+                            "label": "Kapasitas"
+                        }
+                    },
+                    "tarif_membership": {
+                        "type": "array",
+                        "items": {
+                            "no": {
+                                "type": "integer",
+                                "label": "No"
+                            },
+                            "jenis_kelas": {
+                                "type": "string",
+                                "maxLength": 50,
+                                "label": "Jenis/Kelas"
+                            },
+                            "tarif_rp": {
+                                "type": "decimal",
+                                "precision": 15,
+                                "scale": 2,
+                                "label": "Tarif (Rp)"
+                            }
+                        },
+                        "label": "Tarif Membership"
+                    }
+                }
+            },
+            "air_tanah": {
+                "objek_pajak": {
+                    "tujuan_pemanfaatan": {
+                        "type": "enum",
+                        "options": [
+                            {
+                                "code": "non_niaga",
+                                "label": "Non Niaga"
+                            },
+                            {
+                                "code": "niaga",
+                                "label": "Niaga"
+                            },
+                            {
+                                "code": "industri_dengan_bahan_baku_air",
+                                "label": "Industri dengan Bahan Baku Air"
+                            },
+                            {
+                                "code": "pelayanan_publik_oleh_pdam",
+                                "label": "Pelayanan Publik oleh PDAM"
+                            }
+                        ],
+                        "label": "Tujuan Pemanfaatan"
+                    },
+                    "lokasi_sumber_air": {
+                        "type": "text",
+                        "label": "Lokasi Sumber Air"
+                    },
+                    "mesin_pompa_yang_digunakan": {
+                        "nama_tipe": {
+                            "type": "string",
+                            "maxLength": 100,
+                            "label": "Nama/Tipe"
+                        },
+                        "kapasitas": {
+                            "type": "decimal",
+                            "precision": 10,
+                            "scale": 2,
+                            "unit": "M³/Jam",
+                            "label": "Kapasitas"
+                        }
+                    },
+                    "meteran_air": {
+                        "type": "enum",
+                        "options": [
+                            {
+                                "code": "ada",
+                                "label": "Ada"
+                            },
+                            {
+                                "code": "tidak_ada",
+                                "label": "Tidak Ada"
+                            }
+                        ],
+                        "label": "Meteran Air"
+                    }
+                }
+            },
+            "parkir": {
+                "objek_pajak": {
+                    "lokasi": {
+                        "type": "text",
+                        "label": "Lokasi"
+                    },
+                    "pengelola": {
+                        "type": "enum",
+                        "options": [
+                            {
+                                "code": "dikelola_sendiri_pemilik_lahan_gedung",
+                                "label": "Dikelola Sendiri Pemilik Lahan Gedung"
+                            },
+                            {
+                                "code": "dikelola_jasa_parkir_pihak_ketiga",
+                                "label": "Dikelola Jasa Parkir Pihak Ketiga"
+                            }
+                        ],
+                        "label": "Pengelola"
+                    },
+                    "kapasitas_parkir": {
+                        "luas_lahan": {
+                            "type": "decimal",
+                            "precision": 10,
+                            "scale": 2,
+                            "unit": "m²",
+                            "label": "Luas Lahan"
+                        },
+                        "parkir_roda_dua": {
+                            "type": "integer",
+                            "unit": "kendaraan",
+                            "label": "Parkir Roda Dua"
+                        },
+                        "parkir_roda_empat": {
+                            "type": "integer",
+                            "unit": "kendaraan",
+                            "label": "Parkir Roda Empat"
+                        }
+                    },
+                    "waktu_operasional": {
+                        "hari": {
+                            "type": "array",
+                            "options": [
+                                "senin",
+                                "selasa",
+                                "rabu",
+                                "kamis",
+                                "jumat",
+                                "sabtu",
+                                "minggu"
+                            ],
+                            "label": "Hari"
+                        },
+                        "jam_buka": {
+                            "type": "time",
+                            "label": "Jam"
+                        },
+                        "jam_tutup": {
+                            "type": "time",
+                            "label": "s/d"
+                        },
+                        "pengecualian_libur": {
+                            "type": "text",
+                            "nullable": true,
+                            "label": "Pengecualian/Libur (jika ada)"
+                        }
+                    },
+                    "tarif_rupiah": {
+                        "sepeda": {
+                            "type": "decimal",
+                            "precision": 15,
+                            "scale": 2,
+                            "label": "Sepeda"
+                        },
+                        "sepeda_motor": {
+                            "type": "decimal",
+                            "precision": 15,
+                            "scale": 2,
+                            "label": "Sepeda Motor"
+                        },
+                        "mobil_penumpang_pickup_sejenisnya": {
+                            "type": "decimal",
+                            "precision": 15,
+                            "scale": 2,
+                            "label": "Mobil Penumpang/Pickup/Sejenisnya"
+                        },
+                        "truk_gandengan_bus_besar_sejenisnya": {
+                            "type": "decimal",
+                            "precision": 15,
+                            "scale": 2,
+                            "label": "Truk Gandengan/Bus Besar/Sejenisnya"
+                        },
+                        "truk_bus_sedang_bus_kecil_sejenisnya": {
+                            "type": "decimal",
+                            "precision": 15,
+                            "scale": 2,
+                            "label": "Truk/Bus Sedang/Bus Kecil/Sejenisnya"
+                        },
+                        "tarif_tambahan": {
+                            "type": "decimal",
+                            "precision": 15,
+                            "scale": 2,
+                            "nullable": true,
+                            "label": "Tarif Tambahan"
+                        }
+                    },
+                    "karcis_parkir": {
+                        "type": "enum",
+                        "options": [
+                            {
+                                "code": "keluaran_sistem_informasi_berbasis_komputer",
+                                "label": "Keluaran Sistem Informasi Berbasis Komputer"
+                            },
+                            {
+                                "code": "karcis_dengan_perforasi",
+                                "label": "Karcis dengan Perforasi"
+                            },
+                            {
+                                "code": "karcis_biasa",
+                                "label": "Karcis Biasa"
+                            },
+                            {
+                                "code": "tidak_ada",
+                                "label": "Tidak Ada"
+                            }
+                        ],
+                        "label": "Karcis Parkir"
+                    }
+                }
+            },
+            "perhotelan": {
+                "objek_pajak": {
+                    "jenis_hotel": {
+                        "type": "enum",
+                        "options": [
+                            {
+                                "code": "bintang_lima",
+                                "label": "Bintang Lima"
+                            },
+                            {
+                                "code": "bintang_empat",
+                                "label": "Bintang Empat"
+                            },
+                            {
+                                "code": "bintang_tiga",
+                                "label": "Bintang Tiga"
+                            },
+                            {
+                                "code": "bintang_dua",
+                                "label": "Bintang Dua"
+                            },
+                            {
+                                "code": "bintang_satu",
+                                "label": "Bintang Satu"
+                            },
+                            {
+                                "code": "non_bintang",
+                                "label": "Non Bintang"
+                            },
+                            {
+                                "code": "rumah_kost",
+                                "label": "Rumah Kost"
+                            }
+                        ],
+                        "label": "Jenis Hotel"
+                    },
+                    "jaringan_hotel": {
+                        "status": {
+                            "type": "enum",
+                            "options": [
+                                {
+                                    "code": "tidak_ada",
+                                    "label": "Tidak Ada"
+                                },
+                                {
+                                    "code": "nasional",
+                                    "label": "Nasional"
+                                },
+                                {
+                                    "code": "internasional",
+                                    "label": "Internasional"
+                                }
+                            ],
+                            "label": "Jaringan Hotel"
+                        },
+                        "nama_jaringan": {
+                            "type": "string",
+                            "maxLength": 100,
+                            "nullable": true,
+                            "label": "Nama Jaringan"
+                        }
+                    },
+                    "tipe_dan_jumlah_kamar": {
+                        "type": "array",
+                        "maxItems": 7,
+                        "items": {
+                            "no": {
+                                "type": "integer",
+                                "label": "No"
+                            },
+                            "tipe_kamar": {
+                                "type": "string",
+                                "maxLength": 50,
+                                "label": "Tipe Kamar"
+                            },
+                            "jumlah_operasional": {
+                                "type": "integer",
+                                "label": "Jumlah Kamar Operasional"
+                            },
+                            "jumlah_non_operasional": {
+                                "type": "integer",
+                                "label": "Jumlah Kamar Non-Operasional"
+                            },
+                            "tarif_rata_rata": {
+                                "type": "decimal",
+                                "precision": 15,
+                                "scale": 2,
+                                "label": "Tarif Rata-rata (Rp/Kamar)"
+                            }
+                        },
+                        "label": "Tipe dan Jumlah Kamar"
+                    },
+                    "fasilitas_hotel": {
+                        "type": "array",
+                        "multiple": true,
+                        "options": [
+                            {
+                                "code": "restoran_kafetaria_bar",
+                                "label": "Restoran/Kafetaria/Bar"
+                            },
+                            {
+                                "code": "spa_pusat_kebugaran",
+                                "label": "Spa/Pusat Kebugaran"
+                            },
+                            {
+                                "code": "diskotik_karaoke_klub_malam",
+                                "label": "Diskotik/Karaoke/Klub Malam"
+                            },
+                            {
+                                "code": "ruang_rapat_pertemuan_ballroom",
+                                "label": "Ruang Rapat/Pertemuan/Ballroom"
+                            }
+                        ],
+                        "label": "Fasilitas Hotel"
+                    },
+                    "sistem_akuntansi": {
+                        "type": "enum",
+                        "options": [
+                            {
+                                "code": "pembukuan",
+                                "label": "Pembukuan"
+                            },
+                            {
+                                "code": "pencatatan_sederhana",
+                                "label": "Pencatatan Sederhana"
+                            },
+                            {
+                                "code": "tidak_ada",
+                                "label": "Tidak Ada"
+                            }
+                        ],
+                        "label": "Sistem Akuntansi"
+                    },
+                    "bon_penjualan": {
+                        "type": "enum",
+                        "options": [
+                            {
+                                "code": "keluaran_sistem_informasi_berbasis_komputer",
+                                "label": "Keluaran Sistem Informasi Berbasis Komputer"
+                            },
+                            {
+                                "code": "keluaran_mesin_cash_register",
+                                "label": "Keluaran Mesin Cash Register"
+                            },
+                            {
+                                "code": "bon_penjualan_dengan_perforasi",
+                                "label": "Bon Penjualan (Bill) dengan Perforasi"
+                            },
+                            {
+                                "code": "bon_penjualan_biasa",
+                                "label": "Bon Penjualan (Bill) Biasa"
+                            },
+                            {
+                                "code": "tidak_ada",
+                                "label": "Tidak Ada"
+                            }
+                        ],
+                        "label": "Bon Penjualan (Bill)"
+                    }
+                }
+            }
+        }
+    }
+}

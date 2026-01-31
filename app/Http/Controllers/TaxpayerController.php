@@ -16,8 +16,8 @@ class TaxpayerController extends Controller
         $user = $request->user();
         $query = Taxpayer::with(['opd', 'retributionTypes']);
 
-        // Admin OPD only sees their own OPD's taxpayers
-        if ($user && $user->role === 'opd') {
+        // Admin OPD and Kasir only see their own OPD's taxpayers
+        if ($user && in_array($user->role, ['opd', 'kasir'])) {
             $query->where('opd_id', $user->opd_id);
         }
 
@@ -106,7 +106,7 @@ class TaxpayerController extends Controller
     {
         $user = $request->user();
 
-        // All non-super-admins can only view their own OPD's taxpayers
+        // All non-super-admins (OPD, Kasir) can only view their own OPD's taxpayers
         if (!$user->isSuperAdmin() && $taxpayer->opd_id !== $user->opd_id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }

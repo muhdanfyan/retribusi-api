@@ -1,0 +1,22 @@
+#!/usr/bin/expect -f
+set timeout 60
+set password "Sipanda123#"
+spawn ssh -o StrictHostKeyChecking=no sipanda@157.10.252.74
+expect "password:"
+send "$password\r"
+expect "$ "
+send "cd /home/sipanda/retribusi-api\r"
+expect "$ "
+# Use heredoc for the tinker command to avoid quoting nightmares
+send "php artisan tinker <<'EOF'\r"
+expect ">>>"
+send "\$type = App\\Models\\RetributionType::firstOrCreate(\['name' => 'Retribusi Pemakaian Kekayaan Daerah'\], \['opd_id' => 7, 'category' => 'Retribusi Jasa Usaha', 'base_amount' => 0\]);\r"
+expect ">>>"
+send "\$ids = \[21, 22, 23, 24, 25\];\r"
+expect ">>>"
+send "foreach (\$ids as \$id) { \$misType = App\\Models\\RetributionType::find(\$id); if (\$misType) { echo 'Moving ' . \$misType->name . PHP_EOL; App\\Models\\Zone::updateOrCreate(\['name' => \$misType->name\], \['opd_id' => \$misType->opd_id, 'retribution_type_id' => \$type->id, 'description' => 'Migrated from RetributionType'\]); App\\Models\\TaxObject::where('retribution_type_id', \$id)->update(\['retribution_type_id' => \$type->id, 'zone_id' => App\\Models\\Zone::where('name', \$misType->name)->first()->id\]); \$misType->delete(); } }\r"
+expect ">>>"
+send "exit\r"
+expect "$ "
+send "exit\r"
+expect eof

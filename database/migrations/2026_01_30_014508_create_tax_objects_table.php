@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('tax_objects', function (Blueprint $table) {
             $table->id();
+            $table->string('nop')->nullable()->unique();
             $table->foreignId('taxpayer_id')->constrained()->onDelete('cascade');
             $table->foreignId('retribution_type_id')->constrained()->onDelete('cascade');
             $table->foreignId('opd_id')->constrained()->onDelete('cascade');

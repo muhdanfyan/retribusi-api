@@ -1,0 +1,13 @@
+#!/usr/bin/expect -f
+set timeout 60
+set password "Sipanda123#"
+spawn ssh -o StrictHostKeyChecking=no sipanda@157.10.252.74
+expect "password:"
+send "$password\r"
+expect "$ "
+send "cd /home/sipanda/retribusi-api\r"
+expect "$ "
+send "php artisan tinker --execute=\"echo 'RETRIBUTION TYPES:' . PHP_EOL; foreach(App\\\\Models\\\\RetributionType::where('name', 'like', '%Bukit%')->orWhere('name', 'like', '%Kota%')->orWhere('name', 'like', '%Pantai%')->orWhere('name', 'like', '%Pasar%')->orWhere('name', 'like', '%Stadion%')->get() as \\\$t) { echo \\\$t->id . ' | ' . \\\$t->name . ' | ' . \\\$t->category . PHP_EOL; } echo 'ZONES:' . PHP_EOL; foreach(App\\\\Models\\\\Zone::all() as \\\$z) { echo \\\$z->id . ' | ' . \\\$z->name . PHP_EOL; }\"\r"
+expect "$ "
+send "exit\r"
+expect eof

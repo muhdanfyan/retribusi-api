@@ -4,19 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Zone extends Model
+class RetributionRate extends Model
 {
     protected $fillable = [
         'opd_id',
         'retribution_type_id',
         'retribution_classification_id',
+        'zone_id',
         'name',
-        'code',
-        'multiplier',
         'amount',
-        'description',
-        'latitude',
-        'longitude',
+        'unit',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'amount' => 'decimal:2',
+        'is_active' => 'boolean',
     ];
 
     public function opd()
@@ -34,8 +37,8 @@ class Zone extends Model
         return $this->belongsTo(RetributionClassification::class, 'retribution_classification_id');
     }
 
-    public function rates()
+    public function zone()
     {
-        return $this->hasMany(RetributionRate::class);
+        return $this->belongsTo(Zone::class);
     }
 }

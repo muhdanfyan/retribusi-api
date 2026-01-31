@@ -1,0 +1,19 @@
+#!/usr/bin/expect -f
+set timeout 60
+set password "Sipanda123#"
+spawn ssh -o StrictHostKeyChecking=no sipanda@157.10.252.74
+expect "password:"
+send "$password\r"
+expect "$ "
+send "cd /home/sipanda/retribusi-api\r"
+expect "$ "
+send "php artisan tinker --execute=\"foreach(App\\\\Models\\\\Opd::all() as \\\$opd) { echo \\\$opd->id . ' - ' . \\\$opd->name . PHP_EOL; }\"\r"
+expect "$ "
+send "php artisan tinker --execute=\"\\\$user = App\\\\Models\\\\User::firstOrNew(\['email' => 'kasir@bapenda.go.id'\]); \\\$user->name = 'Kasir BAPENDA'; \\\$user->password = Hash::make('password123'); \\\$user->role = 'kasir'; \\\$user->status = 'active'; \\\$user->opd_id = null; \\\$user->save(); \\\$opd = App\\\\Models\\\\Opd::where('name', 'like', '%Badan Pendapatan Daerah%')->first(); if (\\\$opd) { \\\$user->opd_id = \\\$opd->id; \\\$user->save(); echo 'User created/updated on PROD VPS with OPD ID ' . \\\$opd->id; } else { echo 'User created on PROD VPS (No OPD found)'; }\"\r"
+expect "$ "
+send "cd /home/sipanda/retribusi-api-dev\r"
+expect "$ "
+send "php artisan tinker --execute=\"\\\$user = App\\\\Models\\\\User::firstOrNew(\['email' => 'kasir@bapenda.go.id'\]); \\\$user->name = 'Kasir BAPENDA'; \\\$user->password = Hash::make('password123'); \\\$user->role = 'kasir'; \\\$user->status = 'active'; \\\$user->opd_id = null; \\\$user->save(); \\\$opd = App\\\\Models\\\\Opd::where('name', 'like', '%Badan Pendapatan Daerah%')->first(); if (\\\$opd) { \\\$user->opd_id = \\\$opd->id; \\\$user->save(); echo 'User created/updated on DEV VPS with OPD ID ' . \\\$opd->id; } else { echo 'User created on DEV VPS (No OPD found)'; }\"\r"
+expect "$ "
+send "exit\r"
+expect eof

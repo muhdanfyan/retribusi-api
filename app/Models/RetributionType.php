@@ -58,6 +58,22 @@ class RetributionType extends Model
     }
 
     /**
+     * Get all classifications for this type
+     */
+    public function classifications(): HasMany
+    {
+        return $this->hasMany(RetributionClassification::class);
+    }
+
+    /**
+     * Get all rates for this type
+     */
+    public function rates(): HasMany
+    {
+        return $this->hasMany(RetributionRate::class);
+    }
+
+    /**
      * Get all tax objects for this type
      */
     public function taxObjects(): HasMany

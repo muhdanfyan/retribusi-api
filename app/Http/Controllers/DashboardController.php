@@ -63,7 +63,13 @@ class DashboardController extends Controller
                 'collection_rate' => '+5.2%',
                 'pending_bills' => '-8.1%',
                 'active_taxpayers' => '+15.3%'
-            ]
+            ],
+            'revenue_by_type' => Payment::join('bills', 'payments.bill_id', '=', 'bills.id')
+                ->join('retribution_types', 'bills.retribution_type_id', '=', 'retribution_types.id')
+                ->where('bills.opd_id', $opdId ?: DB::raw('bills.opd_id'))
+                ->select('retribution_types.name', DB::raw('SUM(payments.amount) as total'))
+                ->groupBy('retribution_types.name')
+                ->get()
         ]);
     }
 

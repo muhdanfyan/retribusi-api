@@ -32,7 +32,7 @@ class PaymentController extends Controller
         }
 
         $request->validate([
-            'payment_method' => 'required|string|in:cash,transfer,qris',
+            'payment_method' => 'required|string|in:cash,qris,va',
             'amount' => 'required|numeric|min:0',
         ]);
 
