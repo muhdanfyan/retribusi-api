@@ -31,6 +31,29 @@ class RetributionType extends Model
         'requirements' => 'array',
     ];
 
+    protected $appends = ['icon_url'];
+
+    /**
+     * Get the icon URL or Lucide name
+     */
+    public function getIconAttribute($value)
+    {
+        if (empty($value)) return null;
+
+        // If it's a URL or doesn't look like a path, return as is (Lucide name or full URL)
+        if (filter_var($value, FILTER_VALIDATE_URL) || !str_contains($value, '/')) {
+            return $value;
+        }
+
+        // If it's a local storage path, ensure it has the full app URL
+        if (str_starts_with($value, '/storage') || str_starts_with($value, 'storage')) {
+            $path = ltrim($value, '/');
+            return config('app.url') . '/' . $path;
+        }
+
+        return $value;
+    }
+
     /**
      * Get the OPD that owns this retribution type
      */

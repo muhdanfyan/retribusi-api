@@ -26,22 +26,22 @@ class BapendaMasterDataSeeder extends Seeder
             ]
         );
 
-        // --- Assets Mapping (Using generated 3D Isometric icons) ---
-        $pajakLogo = '/storage/icons/pajak_daerah.png';
-        $retribusiLogo = '/storage/icons/retribusi_daerah.png';
+        // --- Assets Mapping (Cloudinary Permanent URLs) ---
+        $pajakLogo = 'https://res.cloudinary.com/ddhgtgsed/image/upload/v1769855477/retribusi/icons/cixchfed9fiadty2c4a1.jpg';
+        $retribusiLogo = 'https://res.cloudinary.com/ddhgtgsed/image/upload/v1769855483/retribusi/icons/mqbtlhf4modvik6ikhvi.jpg';
         
         $types = [
-            'PBJT' => ['cat' => 'Pajak', 'icon' => $pajakLogo], // Fallback to 3D Logo
-            'Pajak Reklame' => ['cat' => 'Pajak', 'icon' => '/storage/icons/reklame.png'],
-            'Pajak MBLB' => ['cat' => 'Pajak', 'icon' => '/storage/icons/mblb.png'],
-            'Pajak Sarang Burung Walet' => ['cat' => 'Pajak', 'icon' => '/storage/icons/walet.png'],
-            'Air Tanah' => ['cat' => 'Pajak', 'icon' => $pajakLogo], // Fallback to 3D Logo
-            'BPHTB' => ['cat' => 'Pajak', 'icon' => '/storage/icons/bphtb.png'],
-            'Opsen PKB' => ['cat' => 'Pajak', 'icon' => $pajakLogo], // Fallback to 3D Logo
-            'Opsen BBNKB' => ['cat' => 'Pajak', 'icon' => $pajakLogo], // Fallback to 3D Logo
-            'Retribusi PKD' => ['cat' => 'Retribusi', 'icon' => $retribusiLogo], // Fallback to 3D Logo
-            'Retribusi Jasa Umum' => ['cat' => 'Retribusi', 'icon' => $retribusiLogo], // Fallback to 3D Logo
-            'Retribusi Perizinan Tertentu' => ['cat' => 'Retribusi', 'icon' => $retribusiLogo], // Fallback to 3D Logo
+            'PBJT' => ['cat' => 'Pajak', 'icon' => $pajakLogo],
+            'Pajak Reklame' => ['cat' => 'Pajak', 'icon' => 'https://res.cloudinary.com/ddhgtgsed/image/upload/v1769855480/retribusi/icons/airqm7ydazqqpsqezlrv.jpg'],
+            'Pajak MBLB' => ['cat' => 'Pajak', 'icon' => 'https://res.cloudinary.com/ddhgtgsed/image/upload/v1769855474/retribusi/icons/pl1ag8vgja8jwzabaavc.jpg'],
+            'Pajak Sarang Burung Walet' => ['cat' => 'Pajak', 'icon' => 'https://res.cloudinary.com/ddhgtgsed/image/upload/v1769855486/retribusi/icons/agqc0orhv7i9wg4a7x1t.jpg'],
+            'Air Tanah' => ['cat' => 'Pajak', 'icon' => $pajakLogo],
+            'BPHTB' => ['cat' => 'Pajak', 'icon' => 'https://res.cloudinary.com/ddhgtgsed/image/upload/v1769855470/retribusi/icons/tjhkxpabcvlhjegvnzyf.jpg'],
+            'Opsen PKB' => ['cat' => 'Pajak', 'icon' => $pajakLogo],
+            'Opsen BBNKB' => ['cat' => 'Pajak', 'icon' => $pajakLogo],
+            'Retribusi PKD' => ['cat' => 'Retribusi', 'icon' => $retribusiLogo],
+            'Retribusi Jasa Umum' => ['cat' => 'Retribusi', 'icon' => $retribusiLogo],
+            'Retribusi Perizinan Tertentu' => ['cat' => 'Retribusi', 'icon' => $retribusiLogo],
         ];
 
         // --- SCHEMA DEFINITIONS ---
