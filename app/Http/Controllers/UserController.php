@@ -128,22 +128,42 @@ class UserController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(User $user, Request $request)
-    {
-        $loggedInUser = $request->user();
+ * Remove the specified resource from storage.
+ */
+public function destroy(User $user, Request $request)
+{
+    $loggedInUser = $request->user();
 
-        if (!$loggedInUser->isSuperAdmin() && $user->opd_id !== $loggedInUser->opd_id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        if ($user->id === $loggedInUser->id) {
-            return response()->json(['message' => 'Cannot delete yourself'], 400);
-        }
-
-        $user->delete();
-
-        return response()->json(null, 204);
+    // Validasi: tidak bisa hapus diri sendiri
+    if ($user->id === $loggedInUser->id) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Tidak dapat menghapus akun sendiri'
+        ], 400);
     }
+
+    // Validasi: super_admin tidak bisa dihapus oleh non-super_admin
+    if ($user->role === 'super_admin' && !$loggedInUser->isSuperAdmin()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Tidak memiliki izin untuk menghapus Super Admin'
+        ], 403);
+    }
+
+    // Validasi: OPD user hanya bisa dihapus oleh admin OPD yang sama atau super_admin
+    if (!$loggedInUser->isSuperAdmin() && $user->opd_id !== $loggedInUser->opd_id) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Tidak memiliki izin untuk menghapus user dari OPD lain'
+        ], 403);
+    }
+
+    $userName = $user->name;
+    $user->delete();
+
+    return response()->json([
+        'success' => true,
+        'message' => "User '{$userName}' berhasil dihapus"
+    ], 200);
+}
 }
