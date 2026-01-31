@@ -1,0 +1,11 @@
+#!/usr/bin/expect -f
+set timeout 60
+set password "Sipanda123#"
+spawn ssh -o StrictHostKeyChecking=no sipanda@157.10.252.74
+expect "password:"
+send "$password\r"
+expect "$ "
+send "mysql -u sipanda -pSipanda123# -e \"SELECT TABLE_NAME, COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME = 'retribution_types' AND TABLE_SCHEMA = 'retribusi';\"\r"
+expect "$ "
+send "exit\r"
+expect eof

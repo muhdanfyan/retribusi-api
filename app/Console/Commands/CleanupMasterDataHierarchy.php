@@ -27,76 +27,87 @@ class CleanupMasterDataHierarchy extends Command
     {
         $this->info('Starting Master Data Cleanup...');
 
-        // 1. Create High Level Type for BAPENDA if not exists
-        $type = \App\Models\RetributionType::firstOrCreate(
-            ['name' => 'Retribusi Pemakaian Kekayaan Daerah'],
-            [
-                'opd_id' => 7, // BAPENDA VPS ID
-                'category' => 'Retribusi Jasa Usaha',
-                'base_amount' => 0,
-                'unit' => 'per_objek'
-            ]
-        );
+        \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
-        $this->info('Main Retribution Type ensured: ' . $type->name);
+        try {
+            // 1. Create High Level Type for BAPENDA if not exists
+            $type = \App\Models\RetributionType::firstOrCreate(
+                ['name' => 'Retribusi Pemakaian Kekayaan Daerah'],
+                [
+                    'opd_id' => 7, // BAPENDA VPS ID
+                    'category' => 'Retribusi Jasa Usaha',
+                    'base_amount' => 0,
+                    'unit' => 'per_objek'
+                ]
+            );
 
-        // 2. Identify misclassified types (Zones currently entered as Types)
-        // These are the IDs captured from VPS check: 21, 22, 23, 24, 25
-        $misclassifiedIds = [21, 22, 23, 24, 25];
-        
-        foreach ($misclassifiedIds as $id) {
-            $misType = \App\Models\RetributionType::find($id);
-            if ($misType) {
-                $this->info("Moving misclassified Type: {$misType->name} -> Zone");
+            $this->info('Main Retribution Type ensured: ' . $type->name);
 
-                // Create Zone for this location
-                $zone = \App\Models\Zone::updateOrCreate(
-                    ['name' => $misType->name],
-                    [
-                        'opd_id' => $misType->opd_id,
-                        'retribution_type_id' => $type->id,
-                        'description' => 'Migrated from RetributionType'
-                    ]
-                );
+            // 2. Create a Default Classification
+            $classification = \App\Models\RetributionClassification::firstOrCreate(
+                ['name' => 'Umum', 'retribution_type_id' => $type->id],
+                ['opd_id' => 7, 'code' => 'UMUM', 'description' => 'Klasifikasi default']
+            );
 
-                // Create a Rate (Tarif) for this Zone
-                \App\Models\RetributionRate::updateOrCreate(
-                    [
+            // 3. Identify misclassified types (Zones currently entered as Types)
+            $misclassifiedIds = [21, 22, 23, 24, 25];
+            
+            foreach ($misclassifiedIds as $id) {
+                $misType = \App\Models\RetributionType::find($id);
+                if ($misType) {
+                    $this->info("Moving misclassified Type: {$misType->name} -> Zone");
+
+                    // Create Zone for this location
+                    $zone = \App\Models\Zone::updateOrCreate(
+                        ['name' => $misType->name],
+                        [
+                            'opd_id' => $misType->opd_id,
+                            'retribution_type_id' => $type->id,
+                            'retribution_classification_id' => $classification->id,
+                            'code' => strtoupper(\Str::slug($misType->name)),
+                            'description' => 'Migrated from RetributionType'
+                        ]
+                    );
+
+                    // Create a Rate (Tarif) for this Zone
+                    \App\Models\RetributionRate::updateOrCreate(
+                        [
+                            'retribution_type_id' => $type->id,
+                            'zone_id' => $zone->id
+                        ],
+                        [
+                            'opd_id' => $misType->opd_id,
+                            'name' => 'Tarif ' . $misType->name,
+                            'amount' => 120000, 
+                            'unit' => 'Bulan',
+                            'is_active' => true
+                        ]
+                    );
+
+                    // Update all dependencies
+                    \App\Models\TaxObject::where('retribution_type_id', $id)->update([
                         'retribution_type_id' => $type->id,
                         'zone_id' => $zone->id
-                    ],
-                    [
-                        'opd_id' => $misType->opd_id,
-                        'name' => 'Tarif Standar ' . $misType->name,
-                        'amount' => 120000, // Default based on user report
-                        'unit' => 'Bulan',
-                        'is_active' => true
-                    ]
-                );
+                    ]);
 
-                // Update existing Tax Objects to point to the new Type and Zone
-                \App\Models\TaxObject::where('retribution_type_id', $id)->update([
-                    'retribution_type_id' => $type->id,
-                    'zone_id' => $zone->id
-                ]);
+                    \App\Models\Bill::where('retribution_type_id', $id)->update([
+                        'retribution_type_id' => $type->id
+                    ]);
 
-                // Update existing Bills to avoid foreign key violations
-                \App\Models\Bill::where('retribution_type_id', $id)->update([
-                    'retribution_type_id' => $type->id
-                ]);
+                    \DB::table('taxpayer_retribution_type')->where('retribution_type_id', $id)->update([
+                        'retribution_type_id' => $type->id
+                    ]);
 
-                // Update Pivot Table
-                \DB::table('taxpayer_retribution_type')->where('retribution_type_id', $id)->update([
-                    'retribution_type_id' => $type->id
-                ]);
-
-                $this->info("Updated dependencies for {$misType->name}");
-
-                // Finally delete the misclassified type
-                $misType->delete();
+                    // Delete the misclassified type
+                    $misType->delete();
+                }
             }
-        }
 
-        $this->info('Master Data Cleanup Completed Successfully.');
+            $this->info('Master Data Cleanup Completed Successfully.');
+        } catch (\Exception $e) {
+            $this->error('Cleanup failed: ' . $e->getMessage());
+        } finally {
+            \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
     }
 }
