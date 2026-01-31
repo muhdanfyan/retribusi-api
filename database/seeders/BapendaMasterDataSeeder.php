@@ -44,25 +44,19 @@ class BapendaMasterDataSeeder extends Seeder
             'Retribusi Perizinan Tertentu' => ['cat' => 'Retribusi', 'icon' => $retribusiLogo],
         ];
 
-        // --- SCHEMA DEFINITIONS ---
-        $taxSchema = [
-            ['key' => 'nama_objek', 'label' => 'Nama Objek Pajak/Usaha', 'type' => 'text', 'required' => true],
-            ['key' => 'alamat_objek', 'label' => 'Alamat Lengkap Usaha', 'type' => 'textarea', 'required' => true],
-            ['key' => 'omset_rata_rata', 'label' => 'Omset Penjualan (Rata-rata/Bulan)', 'type' => 'number', 'required' => true],
+        // --- SCHEMA DEFINITIONS (Aligned with Google Form) ---
+        $unifiedSchema = [
+            ['key' => 'tanggal_pendataan', 'label' => 'Tanggal Pendataan', 'type' => 'date', 'required' => true],
+            ['key' => 'nama_jenis_usaha', 'label' => 'Nama Jenis Usaha', 'type' => 'text', 'required' => true],
+            ['key' => 'omset_penjualan', 'label' => 'Omset Penjualan (Rata-rata/Bulan)', 'type' => 'number', 'required' => true],
+            ['key' => 'tarif_pajak', 'label' => 'Tarif Pajak (%)', 'type' => 'text', 'required' => true],
+            ['key' => 'keterangan_usaha', 'label' => 'Keterangan Usaha', 'type' => 'select', 'options' => ['Aktif', 'Tidak Aktif'], 'required' => true],
+            ['key' => 'lokasi_google_maps', 'label' => 'Link Lokasi Google Maps', 'type' => 'text', 'required' => true],
         ];
 
-        $taxRequirements = [
-            ['key' => 'foto_lokasi', 'label' => 'Foto Objek (Open Kamera)', 'required' => true],
-            ['key' => 'ktp_pemilik', 'label' => 'Foto KTP Pemilik/Pengelola', 'required' => true],
-        ];
-
-        $retributionSchema = [
-            ['key' => 'nama_pengguna', 'label' => 'Nama Pengguna / WR', 'type' => 'text', 'required' => true],
-            ['key' => 'lokasi_pemakaian', 'label' => 'Lokasi Pemakaian', 'type' => 'text', 'required' => true],
-        ];
-
-        $retributionRequirements = [
-            ['key' => 'foto_objek', 'label' => 'Foto Objek (Open Kamera)', 'required' => true],
+        $unifiedRequirements = [
+            ['key' => 'foto_lokasi_open_kamera', 'label' => 'Dokumentasi Open Kamera', 'required' => true],
+            ['key' => 'formulir_data_dukung', 'label' => 'Upload Formulir Data Dukung', 'required' => true],
         ];
 
         // 2. SEED TYPES
@@ -74,8 +68,8 @@ class BapendaMasterDataSeeder extends Seeder
                     'category' => $info['cat'],
                     'icon' => $info['icon'],
                     'is_active' => true,
-                    'form_schema' => $info['cat'] === 'Pajak' ? $taxSchema : $retributionSchema,
-                    'requirements' => $info['cat'] === 'Pajak' ? $taxRequirements : $retributionRequirements,
+                    'form_schema' => $unifiedSchema,
+                    'requirements' => $unifiedRequirements,
                 ]
             );
         }

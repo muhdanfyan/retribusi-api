@@ -104,9 +104,22 @@ class CitizenServiceController extends Controller
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
             'zone_id' => 'nullable|exists:zones,id',
-            'metadata' => 'nullable|array',
-            'proof_file' => 'nullable|file|max:2048', // Optional proof for registration
+            'metadata' => 'nullable',
         ]);
+
+        $cloudinary = app(\App\Services\CloudinaryService::class);
+        $metadata = $request->input('metadata', []);
+        if (is_string($metadata)) {
+            $metadata = json_decode($metadata, true) ?: [];
+        }
+
+        if ($request->hasFile('foto_lokasi_open_kamera')) {
+            $metadata['foto_lokasi_open_kamera'] = $cloudinary->upload($request->file('foto_lokasi_open_kamera'), 'taxpayers/survey');
+        }
+        
+        if ($request->hasFile('formulir_data_dukung')) {
+            $metadata['formulir_data_dukung'] = $cloudinary->upload($request->file('formulir_data_dukung'), 'taxpayers/docs');
+        }
 
         // Create the tax object
         $taxObject = TaxObject::create([
@@ -118,7 +131,7 @@ class CitizenServiceController extends Controller
             'address' => $request->address,
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
-            'metadata' => $request->metadata,
+            'metadata' => $metadata,
             'status' => 'pending',
         ]);
 

@@ -44,23 +44,28 @@ class TaxpayerController extends Controller
      */
     public function store(Request $request)
     {
+        \Log::info('Taxpayer store request', $request->all());
         $user = $request->user();
+        $cloudinary = app(\App\Services\CloudinaryService::class);
 
         $request->validate([
-            'nik' => 'nullable|string|size:16',
+            'nik' => 'nullable|string|max:20',
             'name' => 'required|string|max:255',
             'address' => 'nullable|string',
             'phone' => 'nullable|string|max:20',
             'npwpd' => 'nullable|string|max:50',
             'object_name' => 'nullable|string|max:255',
             'object_address' => 'nullable|string',
-            'is_active' => 'boolean',
+            'is_active' => 'sometimes',
             'retribution_type_ids' => 'required|array|min:1',
             'retribution_type_ids.*' => 'exists:retribution_types,id',
+            'metadata' => 'nullable',
+            'foto_lokasi_open_kamera' => 'nullable|image|max:5120',
+            'formulir_data_dukung' => 'nullable|file|max:10240',
         ]);
 
         // Use user's OPD for non-super-admins, or require opd_id for super_admin
-        if ($user->isSuperAdmin()) {
+        if ($user->role === 'super_admin') {
             $request->validate(['opd_id' => 'required|exists:opds,id']);
             $opdId = $request->opd_id;
         } else {
@@ -68,14 +73,29 @@ class TaxpayerController extends Controller
         }
 
         // Validate that retribution types belong to the same OPD
-        $validTypes = RetributionType::where('opd_id', $opdId)
-            ->whereIn('id', $request->retribution_type_ids)
+        $validTypesIds = (array)$request->retribution_type_ids;
+        $validTypesCount = RetributionType::where('opd_id', $opdId)
+            ->whereIn('id', $validTypesIds)
             ->count();
         
-        if ($validTypes !== count($request->retribution_type_ids)) {
+        if ($validTypesCount !== count($validTypesIds)) {
             return response()->json([
                 'message' => 'Jenis retribusi harus milik OPD yang sama'
             ], 422);
+        }
+
+        // Handle Metadata & Files
+        $metadata = $request->input('metadata', []);
+        if (is_string($metadata)) {
+            $metadata = json_decode($metadata, true) ?: [];
+        }
+
+        if ($request->hasFile('foto_lokasi_open_kamera')) {
+            $metadata['foto_lokasi_open_kamera'] = $cloudinary->upload($request->file('foto_lokasi_open_kamera'), 'taxpayers/survey');
+        }
+        
+        if ($request->hasFile('formulir_data_dukung')) {
+            $metadata['formulir_data_dukung'] = $cloudinary->upload($request->file('formulir_data_dukung'), 'taxpayers/docs');
         }
 
         $taxpayer = Taxpayer::create([
@@ -88,10 +108,11 @@ class TaxpayerController extends Controller
             'object_name' => $request->object_name,
             'object_address' => $request->object_address,
             'is_active' => $request->boolean('is_active', true),
+            'metadata' => $metadata,
         ]);
 
         // Attach retribution types
-        $taxpayer->retributionTypes()->attach($request->retribution_type_ids);
+        $taxpayer->retributionTypes()->attach($validTypesIds);
 
         return response()->json([
             'message' => 'Wajib pajak berhasil ditambahkan',
@@ -122,14 +143,15 @@ class TaxpayerController extends Controller
     public function update(Request $request, Taxpayer $taxpayer)
     {
         $user = $request->user();
+        $cloudinary = app(\App\Services\CloudinaryService::class);
 
         // All non-super-admins can only update their own OPD's taxpayers
-        if (!$user->isSuperAdmin() && $taxpayer->opd_id !== $user->opd_id) {
+        if ($user->role !== 'super_admin' && $taxpayer->opd_id !== $user->opd_id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $request->validate([
-            'nik' => 'nullable|string|size:16',
+            'nik' => 'nullable|string|max:20',
             'name' => 'sometimes|string|max:255',
             'address' => 'nullable|string',
             'phone' => 'nullable|string|max:20',
@@ -139,29 +161,50 @@ class TaxpayerController extends Controller
             'is_active' => 'boolean',
             'retribution_type_ids' => 'sometimes|array|min:1',
             'retribution_type_ids.*' => 'exists:retribution_types,id',
+            'metadata' => 'nullable',
+            'foto_lokasi_open_kamera' => 'nullable|image|max:5120',
+            'formulir_data_dukung' => 'nullable|file|max:10240',
         ]);
 
-        $taxpayer->update($request->only([
+        $data = $request->only([
             'nik', 'name', 'address', 'phone', 'npwpd', 
             'object_name', 'object_address', 'is_active'
-        ]));
+        ]);
+
+        // Handle Metadata & Files
+        $metadata = $request->input('metadata', $taxpayer->metadata ?: []);
+        if (is_string($metadata)) {
+            $metadata = json_decode($metadata, true) ?: [];
+        }
+
+        if ($request->hasFile('foto_lokasi_open_kamera')) {
+            $metadata['foto_lokasi_open_kamera'] = $cloudinary->upload($request->file('foto_lokasi_open_kamera'), 'taxpayers/survey');
+        }
+        
+        if ($request->hasFile('formulir_data_dukung')) {
+            $metadata['formulir_data_dukung'] = $cloudinary->upload($request->file('formulir_data_dukung'), 'taxpayers/docs');
+        }
+
+        $data['metadata'] = $metadata;
+        $taxpayer->update($data);
 
         // Update retribution types if provided
         if ($request->has('retribution_type_ids')) {
             $opdId = $taxpayer->opd_id;
+            $typeIds = (array)$request->retribution_type_ids;
             
             // Validate that retribution types belong to the same OPD
             $validTypes = RetributionType::where('opd_id', $opdId)
-                ->whereIn('id', $request->retribution_type_ids)
+                ->whereIn('id', $typeIds)
                 ->count();
             
-            if ($validTypes !== count($request->retribution_type_ids)) {
+            if ($validTypes !== count($typeIds)) {
                 return response()->json([
                     'message' => 'Jenis retribusi harus milik OPD yang sama'
                 ], 422);
             }
 
-            $taxpayer->retributionTypes()->sync($request->retribution_type_ids);
+            $taxpayer->retributionTypes()->sync($typeIds);
         }
 
         return response()->json([

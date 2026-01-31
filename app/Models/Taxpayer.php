@@ -25,6 +25,7 @@ class Taxpayer extends Model
         'object_address',
         'is_active',
         'password',
+        'metadata',
     ];
 
     protected $hidden = [
@@ -33,6 +34,7 @@ class Taxpayer extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'metadata' => 'array',
     ];
 
     /**
