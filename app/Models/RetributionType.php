@@ -31,8 +31,6 @@ class RetributionType extends Model
         'requirements' => 'array',
     ];
 
-    protected $appends = ['icon_url'];
-
     /**
      * Get the icon URL or Lucide name
      */
@@ -40,12 +38,12 @@ class RetributionType extends Model
     {
         if (empty($value)) return null;
 
-        // If it's a URL or doesn't look like a path, return as is (Lucide name or full URL)
+        // If it's already a full URL or a Lucide icon (no slash), return as is
         if (filter_var($value, FILTER_VALIDATE_URL) || !str_contains($value, '/')) {
             return $value;
         }
 
-        // If it's a local storage path, ensure it has the full app URL
+        // Handle relative paths for local storage
         if (str_starts_with($value, '/storage') || str_starts_with($value, 'storage')) {
             $path = ltrim($value, '/');
             return config('app.url') . '/' . $path;
