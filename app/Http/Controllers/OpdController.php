@@ -155,14 +155,26 @@ class OpdController extends Controller
     }
 
     /**
-     * Delete OPD
+     * Delete OPD (only if no users linked)
      */
     public function destroy(Opd $opd)
     {
+        // Check if OPD has linked users
+        $usersCount = $opd->users()->count();
+        
+        if ($usersCount > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => "Tidak dapat menghapus OPD '{$opd->name}' karena masih memiliki {$usersCount} user terkait. Hapus semua user terlebih dahulu."
+            ], 400);
+        }
+
+        $opdName = $opd->name;
         $opd->delete();
 
         return response()->json([
-            'message' => 'OPD berhasil dihapus'
+            'success' => true,
+            'message' => "OPD '{$opdName}' berhasil dihapus"
         ]);
     }
 }
