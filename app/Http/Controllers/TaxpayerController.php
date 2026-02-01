@@ -57,7 +57,9 @@ class TaxpayerController extends Controller
             'phone' => 'nullable|string|max:20',
             'npwpd' => 'nullable|string|max:50',
             'object_name' => 'nullable|string|max:255',
-            'object_address' => 'nullable|string',
+            'object_address' => 'nullable|string|max:255',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'is_active' => 'sometimes',
             'retribution_type_ids' => 'required|array|min:1',
             'retribution_type_ids.*' => 'exists:retribution_types,id',
@@ -113,6 +115,8 @@ class TaxpayerController extends Controller
             'npwpd' => $request->npwpd,
             'object_name' => $request->object_name,
             'object_address' => $request->object_address,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
             'is_active' => $request->boolean('is_active', true),
             'metadata' => $metadata,
         ]);
@@ -186,7 +190,9 @@ class TaxpayerController extends Controller
                 'phone' => 'nullable|string|max:20',
                 'npwpd' => 'nullable|string|max:50',
                 'object_name' => 'nullable|string|max:255',
-                'object_address' => 'nullable|string',
+                'object_address' => 'nullable|string|max:255',
+                'latitude' => 'nullable|numeric',
+                'longitude' => 'nullable|numeric',
                 'is_active' => 'sometimes',
                 'retribution_type_ids' => 'sometimes|array|min:1',
                 'retribution_type_ids.*' => 'exists:retribution_types,id',
@@ -209,7 +215,7 @@ class TaxpayerController extends Controller
 
         $data = $request->only([
             'nik', 'name', 'address', 'district', 'sub_district', 'phone', 'npwpd', 
-            'object_name', 'object_address', 'is_active'
+            'object_name', 'object_address', 'latitude', 'longitude', 'is_active'
         ]);
 
         // Handle Metadata & Files
