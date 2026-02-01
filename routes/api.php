@@ -92,5 +92,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('reports')->group(function () {
         Route::get('/summary', [ReportController::class, 'getSummary']);
         Route::get('/recent', [ReportController::class, 'getRecent']);
+        Route::get('/petugas-performance', [ReportController::class, 'getPetugasPerformance']);
     });
 });

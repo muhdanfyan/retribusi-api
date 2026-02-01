@@ -63,12 +63,29 @@ class DashboardController extends Controller
             ->where('created_at', '<', $start)
             ->count();
         $taxpayerTrend = $this->calculateTrend($activeTaxpayersCount, $prevTaxpayersCount);
+ 
+         // Petugas achievement (if logged in user is petugas)
+         $petugasAchievement = null;
+         if ($user->role === 'petugas') {
+             $petugasAchievement = [
+                 'collections_count' => Payment::where('approved_by', $user->id)
+                     ->whereBetween('paid_at', [$start->startOfDay(), $end->endOfDay()])
+                     ->count(),
+                 'total_amount' => (float)Payment::where('approved_by', $user->id)
+                     ->whereBetween('paid_at', [$start->startOfDay(), $end->endOfDay()])
+                     ->sum('amount'),
+                 'taxpayers_registered' => \App\Models\Taxpayer::where('created_by', $user->id)
+                     ->whereBetween('created_at', [$start->startOfDay(), $end->endOfDay()])
+                     ->count(),
+             ];
+         }
 
         return response()->json([
             'total_revenue' => $totalRevenue,
             'collection_rate' => $collectionRate,
             'pending_bills' => $pendingBillsCount,
             'active_taxpayers' => $activeTaxpayersCount,
+            'petugas_achievement' => $petugasAchievement,
             'trends' => [
                 'revenue' => ($revenueTrend >= 0 ? '+' : '') . $revenueTrend . '%',
                 'collection_rate' => ($rateTrend >= 0 ? '+' : '') . $rateTrend . '%',
@@ -114,7 +131,7 @@ class DashboardController extends Controller
             ->whereBetween('created_at', [$start->startOfDay(), $end->endOfDay()])
             ->count();
         
-        $paidBills = Bill::where('status', 'paid')
+        $paidBills = Bill::where('status', 'lunas')
             ->when($opdId, fn($q) => $q->where('opd_id', $opdId))
             ->whereBetween('created_at', [$start->startOfDay(), $end->endOfDay()])
             ->count();

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bill;
 use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -88,5 +89,36 @@ class ReportController extends Controller
             });
 
         return response()->json($payments);
+    }
+
+    /**
+     * Get performance stats for petugas (users with petugas role)
+     */
+    public function getPetugasPerformance(Request $request)
+    {
+        $admin = $request->user();
+        $opdId = !$admin->isSuperAdmin() ? $admin->opd_id : $request->query('opd_id');
+
+        $performance = User::where('role', 'petugas')
+            ->when($opdId, fn($q) => $q->where('opd_id', $opdId))
+            ->with(['opd'])
+            ->withCount(['confirmedPayments as total_collections'])
+            ->withSum(['confirmedPayments as total_amount'], 'amount')
+            ->withCount(['createdTaxpayers as taxpayers_registered'])
+            ->get()
+            ->map(function($u) {
+                return [
+                    'id' => $u->id,
+                    'name' => $u->name,
+                    'email' => $u->email,
+                    'opd' => $u->opd->name ?? 'N/A',
+                    'collections_count' => (int)($u->total_collections ?? 0),
+                    'total_amount' => (float)($u->total_amount ?? 0),
+                    'taxpayers_count' => (int)($u->taxpayers_registered ?? 0),
+                    'status' => $u->status
+                ];
+            });
+
+        return response()->json($performance);
     }
 }

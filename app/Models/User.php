@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
  
 class User extends Authenticatable
 {
@@ -81,8 +82,21 @@ class User extends Authenticatable
     /**
      * Get the retribution assignments for this user
      */
-    public function assignments()
+    public function assignments(): HasMany
     {
         return $this->hasMany(UserRetributionAssignment::class);
+    }
+
+    public function confirmedPayments(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'approved_by');
+    }
+
+    /**
+     * Taxpayers created by this user
+     */
+    public function createdTaxpayers(): HasMany
+    {
+        return $this->hasMany(Taxpayer::class, 'created_by');
     }
 }
