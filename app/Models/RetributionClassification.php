@@ -15,7 +15,7 @@ class RetributionClassification extends Model
         'icon',
     ];
 
-    protected $appends = ['icon_url'];
+
 
     public function getIconAttribute($value)
     {
