@@ -19,7 +19,7 @@ class BillController extends Controller
         $user = $request->user();
         $query = Bill::with(['retributionType', 'user', 'opd', 'taxObject', 'taxpayer']);
 
-        if ($user && in_array($user->role, ['opd', 'kasir'])) {
+        if ($user && in_array($user->role, ['opd', 'petugas'])) {
             $query->where('opd_id', $user->opd_id);
         }
 

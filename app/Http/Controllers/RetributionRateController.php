@@ -12,7 +12,7 @@ class RetributionRateController extends Controller
         $user = $request->user();
         $query = RetributionRate::with(['opd', 'retributionType', 'classification', 'zone']);
 
-        if ($user && in_array($user->role, ['opd', 'kasir'])) {
+        if ($user && in_array($user->role, ['opd', 'petugas'])) {
             $query->where('opd_id', $user->opd_id);
         } elseif ($request->has('opd_id')) {
             $query->where('opd_id', $request->opd_id);
@@ -34,7 +34,7 @@ class RetributionRateController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $opdId = in_array($user->role, ['opd', 'kasir']) ? $user->opd_id : $request->opd_id;
+        $opdId = in_array($user->role, ['opd', 'petugas']) ? $user->opd_id : $request->opd_id;
         
         if (!$opdId && $user->role === 'super_admin') {
             $request->validate(['opd_id' => 'required|exists:opds,id']);

@@ -41,7 +41,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
-            'role' => ['required', 'string', Rule::in(['super_admin', 'opd', 'verifikator', 'kasir', 'viewer'])],
+            'role' => ['required', 'string', Rule::in(['super_admin', 'opd', 'verifikator', 'petugas', 'viewer'])],
             'opd_id' => 'nullable|exists:opds,id',
             'status' => ['required', Rule::in(['active', 'inactive'])],
         ]);
@@ -98,7 +98,7 @@ class UserController extends Controller
             'name' => 'sometimes|required|string|max:255',
             'email' => ['sometimes', 'required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8',
-            'role' => ['sometimes', 'required', 'string', Rule::in(['super_admin', 'opd', 'verifikator', 'kasir', 'viewer'])],
+            'role' => ['sometimes', 'required', 'string', Rule::in(['super_admin', 'opd', 'verifikator', 'petugas', 'viewer'])],
             'opd_id' => 'nullable|exists:opds,id',
             'status' => ['sometimes', 'required', Rule::in(['active', 'inactive'])],
         ]);

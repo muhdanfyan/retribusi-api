@@ -17,9 +17,9 @@ class PaymentController extends Controller
     {
         $user = $request->user();
 
-        // Authority check: only kasir or opd (of same opd_id) can record payments
+        // Authority check: only petugas or opd (of same opd_id) can record payments
         if (!$user->isSuperAdmin()) {
-            if (!in_array($user->role, ['opd', 'kasir'])) {
+            if (!in_array($user->role, ['opd', 'petugas'])) {
                 return response()->json(['message' => 'Unauthorized role'], 403);
             }
             if ($bill->opd_id !== $user->opd_id) {

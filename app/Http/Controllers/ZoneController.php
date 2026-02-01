@@ -12,7 +12,7 @@ class ZoneController extends Controller
         $user = $request->user();
         $query = Zone::with(['opd', 'retributionType', 'classification']);
 
-        if ($user && in_array($user->role, ['opd', 'kasir'])) {
+        if ($user && in_array($user->role, ['opd', 'petugas'])) {
             $query->where('opd_id', $user->opd_id);
         } elseif ($request->has('opd_id')) {
             $query->where('opd_id', $request->opd_id);

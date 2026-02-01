@@ -16,8 +16,8 @@ class TaxpayerController extends Controller
         $user = $request->user();
         $query = Taxpayer::with(['opd', 'retributionTypes', 'retributionClassifications', 'creator']);
 
-        // Admin OPD and Kasir only see their own OPD's taxpayers
-        if ($user && in_array($user->role, ['opd', 'kasir'])) {
+        // Admin OPD and Petugas only see their own OPD's taxpayers
+        if ($user && in_array($user->role, ['opd', 'petugas'])) {
             $query->where('opd_id', $user->opd_id);
         }
 

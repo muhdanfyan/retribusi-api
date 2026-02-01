@@ -12,7 +12,7 @@ class RetributionClassificationController extends Controller
         $user = $request->user();
         $query = RetributionClassification::with(['opd', 'retributionType']);
 
-        if ($user && in_array($user->role, ['opd', 'kasir'])) {
+        if ($user && in_array($user->role, ['opd', 'petugas'])) {
             $query->where('opd_id', $user->opd_id);
         } elseif ($request->has('opd_id')) {
             $query->where('opd_id', $request->opd_id);
@@ -31,7 +31,7 @@ class RetributionClassificationController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $opdId = in_array($user->role, ['opd', 'kasir']) ? $user->opd_id : $request->opd_id;
+        $opdId = in_array($user->role, ['opd', 'petugas']) ? $user->opd_id : $request->opd_id;
         
         if (!$opdId && $user->role === 'super_admin') {
             $request->validate(['opd_id' => 'required|exists:opds,id']);
