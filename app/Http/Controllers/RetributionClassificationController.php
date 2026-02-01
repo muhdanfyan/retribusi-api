@@ -29,7 +29,14 @@ class RetributionClassificationController extends Controller
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:10',
             'description' => 'nullable|string',
+            'icon' => 'nullable|image|max:2048',
         ]);
+
+        $cloudinary = app(\App\Services\CloudinaryService::class);
+        $iconPath = null;
+        if ($request->hasFile('icon')) {
+            $iconPath = $cloudinary->upload($request->file('icon'), 'classifications');
+        }
 
         $opdId = in_array($user->role, ['opd', 'petugas']) ? $user->opd_id : $request->opd_id;
         
@@ -43,6 +50,7 @@ class RetributionClassificationController extends Controller
             'retribution_type_id' => $request->retribution_type_id,
             'name' => $request->name,
             'code' => $request->code,
+            'icon' => $iconPath,
             'description' => $request->description,
         ]);
 
@@ -69,9 +77,17 @@ class RetributionClassificationController extends Controller
             'name' => 'sometimes|string|max:255',
             'code' => 'sometimes|string|max:10',
             'description' => 'nullable|string',
+            'icon' => 'nullable|image|max:2048',
         ]);
 
-        $retributionClassification->update($request->all());
+        $data = $request->all();
+
+        if ($request->hasFile('icon')) {
+            $cloudinary = app(\App\Services\CloudinaryService::class);
+            $data['icon'] = $cloudinary->upload($request->file('icon'), 'classifications');
+        }
+
+        $retributionClassification->update($data);
 
         return response()->json([
             'message' => 'Klasifikasi berhasil diupdate',

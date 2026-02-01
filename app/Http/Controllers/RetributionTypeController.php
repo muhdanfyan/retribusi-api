@@ -21,7 +21,7 @@ class RetributionTypeController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $query = RetributionType::with('opd');
+        $query = RetributionType::with(['opd', 'classifications']);
 
         // Admin OPD and Petugas only see their own retribution types
         if ($user && in_array($user->role, ['opd', 'petugas'])) {

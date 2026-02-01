@@ -12,7 +12,28 @@ class RetributionClassification extends Model
         'name',
         'code',
         'description',
+        'icon',
     ];
+
+    protected $appends = ['icon_url'];
+
+    public function getIconAttribute($value)
+    {
+        if (empty($value)) return null;
+
+        // If it's already a full URL or a Lucide icon (no slash), return as is
+        if (filter_var($value, FILTER_VALIDATE_URL) || !str_contains($value, '/')) {
+            return $value;
+        }
+
+        // Handle relative paths for local storage
+        if (str_starts_with($value, '/storage') || str_starts_with($value, 'storage')) {
+            $path = ltrim($value, '/');
+            return config('app.url') . '/' . $path;
+        }
+
+        return $value;
+    }
 
     public function opd()
     {
