@@ -15,6 +15,7 @@ class TaxObject extends Model
         'nop',
         'taxpayer_id',
         'retribution_type_id',
+        'retribution_classification_id',
         'opd_id',
         'zone_id',
         'name',
@@ -48,6 +49,14 @@ class TaxObject extends Model
     public function retributionType(): BelongsTo
     {
         return $this->belongsTo(RetributionType::class);
+    }
+
+    /**
+     * Get the classification for this object
+     */
+    public function classification(): BelongsTo
+    {
+        return $this->belongsTo(RetributionClassification::class, 'retribution_classification_id');
     }
 
     /**

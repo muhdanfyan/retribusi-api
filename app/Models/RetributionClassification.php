@@ -33,4 +33,9 @@ class RetributionClassification extends Model
     {
         return $this->hasMany(RetributionRate::class);
     }
+
+    public function taxObjects()
+    {
+        return $this->hasMany(TaxObject::class);
+    }
 }
