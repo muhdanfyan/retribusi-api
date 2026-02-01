@@ -2,6 +2,8 @@
 
 This folder contains the complete technical documentation and visual diagrams for the SIPANDA Retribusi system.
 
+**Live Documentation Portal**: [api.sipanda.online/docs](https://api.sipanda.online/docs)
+
 ## 📂 Folder Structure
 - `system_documentation.md`: Technical breakdown of architecture, schema, and roles.
 - `retribusi_system_diagrams.md`: Mermaid flowcharts for registration and billing flows.
