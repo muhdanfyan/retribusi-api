@@ -114,7 +114,7 @@ class DashboardController extends Controller
         $user = $request->user();
         $opdId = !$user->isSuperAdmin() ? $user->opd_id : null;
         
-        $query = TaxObject::with(['opd', 'retributionType'])
+        $query = \App\Models\Zone::with(['opd', 'retributionType'])
             ->whereNotNull('latitude')
             ->whereNotNull('longitude');
 
@@ -127,8 +127,8 @@ class DashboardController extends Controller
                 'position' => [(float)$obj->latitude, (float)$obj->longitude],
                 'name' => $obj->name . ' (' . ($obj->retributionType->name ?? 'N/A') . ')',
                 'agency' => $obj->opd->name ?? 'N/A',
-                'address' => $obj->address,
-                'status' => $obj->status,
+                'address' => $obj->description,
+                'status' => 'active',
                 'icon' => $obj->retributionType->icon ?? null,
                 'retribution_type_id' => $obj->retribution_type_id,
             ];
