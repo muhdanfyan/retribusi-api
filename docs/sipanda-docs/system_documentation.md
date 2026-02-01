@@ -41,7 +41,7 @@ The heart of the system is the `retribusi-api` database. Below is the simplified
 | Table | Description | Key Relationships |
 |-------|-------------|-------------------|
 | `opds` | Organization units (e.g., BAPENDA, DISHUB). | One-to-Many with Users, Taxpayers, and Types. |
-| `users` | Staff/Admins (Super Admin, OPD Admin, Kasir). | BelongsTo `opds`. |
+| `users` | Staff/Admins (Super Admin, OPD Admin, Petugas). | BelongsTo `opds`. |
 | `taxpayers` | Wajib Pajak (Citizens). Authenticates via NIK. | BelongsTo `opds` (optional), HasMany `tax_objects`. |
 | `retribution_types` | Tax categories (PBJT, Reklame, Parkir, etc.). | BelongsTo `opds`, HasMany `tax_objects`. |
 | `tax_objects` | Specific physical/business entities being taxed. | BelongsTo `taxpayers`, `retribution_types`, `zones`. |
@@ -119,7 +119,7 @@ erDiagram
     - Verification of field data submitted by Citizens or Petugas.
     - Generate bulk billing (`bills`) for periodic retributions.
 
-### 3. Petugas / Kasir (Field & Transaction)
+### 3. Petugas / Petugas (Field & Transaction)
 - **Role**: Field data collection and manual payment processing.
 - **Workflow**:
     - Input data for new tax objects in the field.

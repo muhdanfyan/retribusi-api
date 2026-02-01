@@ -35,7 +35,7 @@ Dibuat Artisan Command khusus `app:import-tax-object-data` yang melakukan:
 
 ## 🏗️ ARSITEKTUR REPOSITORY (Split)
 
-Berdasarkan kebutuhan fokus fitur (Petugas Kasir), ekosistem aplikasi sekarang terbagi menjadi:
+Berdasarkan kebutuhan fokus fitur (Petugas Petugas), ekosistem aplikasi sekarang terbagi menjadi:
 
 ### 1. `retribusi-admin` (Master Admin)
 - **Fokus**: Kelola OPD, User Management Global, Konfigurasi Sistem.
@@ -43,8 +43,8 @@ Berdasarkan kebutuhan fokus fitur (Petugas Kasir), ekosistem aplikasi sekarang t
 - **Path**: `/Users/pondokit/Herd/retribusi-admin`
 
 ### 2. `retribusi-petugas` (Cashier/Petugas Portal)
-- **Fokus**: Penagihan (Billing), Pembayaran (Payment), Laporan Kasir, Manajemen Wajib Pajak.
-- **User**: Kasir, Verifikator, Petugas Lapangan.
+- **Fokus**: Penagihan (Billing), Pembayaran (Payment), Laporan Petugas, Manajemen Wajib Pajak.
+- **User**: Petugas, Verifikator, Petugas Lapangan.
 - **Path**: `/Users/pondokit/Herd/retribusi-petugas`
 - **Kustomisasi**: 
   - Branding: **SIPANDA Petugas**.

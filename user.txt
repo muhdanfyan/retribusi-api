@@ -3,8 +3,8 @@ Primary Test User (NIK): 7301010101010001
 Password: password123
 Link: sipanda.online
 
-2. Petugas Multi-Portal (Kasir/Petugas)
-Test Email: kasir@bapenda.go.id
+2. Petugas Multi-Portal (Petugas/Petugas)
+Test Email: petugas@bapenda.go.id
 Password: password123
 Link: petugas.sipanda.online
 

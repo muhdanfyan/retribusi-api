@@ -113,10 +113,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User::create([
-            'name' => 'Kasir BAPENDA',
-            'email' => 'kasir@bapenda.go.id',
+            'name' => 'Petugas BAPENDA',
+            'email' => 'petugas@bapenda.go.id',
             'password' => Hash::make('password123'),
-            'role' => 'kasir',
+            'role' => 'petugas',
             'opd_id' => $bapenda->id,
             'status' => 'active',
         ]);

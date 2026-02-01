@@ -61,7 +61,7 @@
 ## Phase 3: Payment & Reporting (Minggu 5-6)
 
 ### 3.1 Pembayaran
-- [ ] Kasir module
+- [ ] Petugas module
 - [ ] Multiple payment methods
 - [ ] Generate kwitansi
 - [ ] Validasi pembayaran
