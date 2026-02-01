@@ -14,7 +14,7 @@ class TaxpayerController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $query = Taxpayer::with(['opd', 'retributionTypes', 'retributionClassifications']);
+        $query = Taxpayer::with(['opd', 'retributionTypes', 'retributionClassifications', 'creator']);
 
         // Admin OPD and Kasir only see their own OPD's taxpayers
         if ($user && in_array($user->role, ['opd', 'kasir'])) {
@@ -119,6 +119,7 @@ class TaxpayerController extends Controller
             'longitude' => $request->longitude,
             'is_active' => $request->boolean('is_active', true),
             'metadata' => $metadata,
+            'created_by' => $user->id,
         ]);
 
         // Attach retribution types and classifications
@@ -143,7 +144,7 @@ class TaxpayerController extends Controller
 
         return response()->json([
             'message' => 'Wajib pajak berhasil ditambahkan',
-            'data' => $taxpayer->load(['opd', 'retributionTypes', 'retributionClassifications'])
+            'data' => $taxpayer->load(['opd', 'retributionTypes', 'retributionClassifications', 'creator'])
         ], 201);
     }
 
@@ -160,7 +161,7 @@ class TaxpayerController extends Controller
         }
 
         return response()->json([
-            'data' => $taxpayer->load(['opd', 'retributionTypes', 'retributionClassifications'])
+            'data' => $taxpayer->load(['opd', 'retributionTypes', 'retributionClassifications', 'creator'])
         ]);
     }
 
@@ -271,7 +272,7 @@ class TaxpayerController extends Controller
 
         return response()->json([
             'message' => 'Wajib pajak berhasil diupdate',
-            'data' => $taxpayer->fresh()->load(['opd', 'retributionTypes', 'retributionClassifications'])
+            'data' => $taxpayer->fresh()->load(['opd', 'retributionTypes', 'retributionClassifications', 'creator'])
         ]);
     }
 

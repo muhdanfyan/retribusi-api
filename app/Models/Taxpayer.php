@@ -23,12 +23,13 @@ class Taxpayer extends Model
         'sub_district',
         'phone',
         'npwpd',
+        'object_name',
         'object_address',
         'latitude',
         'longitude',
         'is_active',
-        'password',
         'metadata',
+        'created_by'
     ];
 
     protected $hidden = [
@@ -43,9 +44,14 @@ class Taxpayer extends Model
     /**
      * Get the OPD that owns this taxpayer
      */
-    public function opd(): BelongsTo
+    public function opd()
     {
         return $this->belongsTo(Opd::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**
