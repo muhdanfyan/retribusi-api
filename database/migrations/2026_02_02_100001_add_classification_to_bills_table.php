@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bills', function (Blueprint $table) {
-            $table->foreignId('retribution_classification_id')->nullable()->after('retribution_type_id')->constrained('retribution_classifications')->onDelete('set null');
+            $table->unsignedBigInteger('retribution_classification_id')->nullable()->after('retribution_type_id');
+            $table->foreign('retribution_classification_id', 'bills_class_id_foreign')->references('id')->on('retribution_classifications')->onDelete('set null');
         });
     }
 
@@ -22,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('bills', function (Blueprint $table) {
-            $table->dropForeign(['retribution_classification_id']);
+            $table->dropForeign('bills_class_id_foreign');
             $table->dropColumn('retribution_classification_id');
         });
     }

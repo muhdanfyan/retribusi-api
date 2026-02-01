@@ -14,8 +14,12 @@ return new class extends Migration
         Schema::create('user_retribution_assignments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('retribution_type_id')->constrained()->onDelete('cascade');
-            $table->foreignId('retribution_classification_id')->nullable()->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('retribution_type_id');
+            $table->unsignedBigInteger('retribution_classification_id')->nullable();
+            
+            $table->foreign('retribution_type_id', 'ura_type_id_foreign')->references('id')->on('retribution_types')->onDelete('cascade');
+            $table->foreign('retribution_classification_id', 'ura_class_id_foreign')->references('id')->on('retribution_classifications')->onDelete('cascade');
+            
             $table->timestamps();
         });
     }
