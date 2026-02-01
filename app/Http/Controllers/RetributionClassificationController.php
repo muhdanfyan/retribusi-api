@@ -12,8 +12,24 @@ class RetributionClassificationController extends Controller
         $user = $request->user();
         $query = RetributionClassification::with(['opd', 'retributionType']);
 
-        if ($user && in_array($user->role, ['opd', 'petugas'])) {
+        if ($user && $user->role === 'opd') {
             $query->where('opd_id', $user->opd_id);
+        } elseif ($user && $user->role === 'petugas') {
+            $query->where('opd_id', $user->opd_id);
+            
+            $assignments = $user->assignments;
+            if ($assignments) {
+                $query->where(function($q) use ($assignments) {
+                    foreach ($assignments as $assignment) {
+                        $q->orWhere(function($sq) use ($assignment) {
+                            $sq->where('retribution_type_id', $assignment->retribution_type_id);
+                            if ($assignment->retribution_classification_id) {
+                                $sq->where('id', $assignment->retribution_classification_id);
+                            }
+                        });
+                    }
+                });
+            }
         } elseif ($request->has('opd_id')) {
             $query->where('opd_id', $request->opd_id);
         }

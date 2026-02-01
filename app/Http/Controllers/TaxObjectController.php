@@ -15,8 +15,24 @@ class TaxObjectController extends Controller
         $user = $request->user();
         $query = TaxObject::with(['taxpayer', 'retributionType', 'opd', 'classification']);
 
-        if ($user && in_array($user->role, ['opd', 'petugas'])) {
+        if ($user && $user->role === 'opd') {
             $query->where('opd_id', $user->opd_id);
+        } elseif ($user && $user->role === 'petugas') {
+            $query->where('opd_id', $user->opd_id);
+            
+            $assignments = $user->assignments;
+            if ($assignments) {
+                $query->where(function($q) use ($assignments) {
+                    foreach ($assignments as $assignment) {
+                        $q->orWhere(function($sq) use ($assignment) {
+                            $sq->where('retribution_type_id', $assignment->retribution_type_id);
+                            if ($assignment->retribution_classification_id) {
+                                $sq->where('retribution_classification_id', $assignment->retribution_classification_id);
+                            }
+                        });
+                    }
+                });
+            }
         }
 
         if ($request->has('retribution_type_id')) {

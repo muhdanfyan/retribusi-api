@@ -24,8 +24,13 @@ class RetributionTypeController extends Controller
         $query = RetributionType::with(['opd', 'classifications']);
 
         // Admin OPD and Petugas only see their own retribution types
-        if ($user && in_array($user->role, ['opd', 'petugas'])) {
+        if ($user && $user->role === 'opd') {
             $query->where('opd_id', $user->opd_id);
+        } elseif ($user && $user->role === 'petugas') {
+            $query->where('opd_id', $user->opd_id);
+            // Filter by assigned types
+            $assignedTypeIds = $user->assignments->pluck('retribution_type_id')->unique()->toArray();
+            $query->whereIn('id', $assignedTypeIds);
         }
 
         if ($request->has('is_active')) {

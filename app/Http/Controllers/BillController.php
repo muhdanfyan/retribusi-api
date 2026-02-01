@@ -37,6 +37,9 @@ class BillController extends Controller
                             });
                         }
                     });
+                } else {
+                    // No assignments = no bills
+                    $query->whereRaw('1 = 0');
                 }
             }
         }
