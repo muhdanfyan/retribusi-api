@@ -49,6 +49,10 @@ class BillController extends Controller
     {
         $user = $request->user();
 
+        if ($user->role === 'petugas') {
+            return response()->json(['message' => 'Petugas tidak memiliki wewenang untuk generate tagihan'], 403);
+        }
+
         // Support both new (tax_object_id) and legacy (taxpayer_id + retribution_type_id) flows
         $request->validate([
             'tax_object_id' => 'required_without_all:taxpayer_id,retribution_type_id|exists:tax_objects,id',
@@ -116,6 +120,10 @@ class BillController extends Controller
     public function bulkStore(Request $request)
     {
         $user = $request->user();
+        
+        if ($user->role === 'petugas') {
+            return response()->json(['message' => 'Petugas tidak memiliki wewenang untuk bulk generate tagihan'], 403);
+        }
         
         $request->validate([
             'retribution_type_id' => 'required|exists:retribution_types,id',
