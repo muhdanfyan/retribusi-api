@@ -17,12 +17,12 @@ class UpdateJasaUsahaRatesSeeder extends Seeder
         // 1. Rename RetributionType 15 to 'Retribusi Jasa Usaha'
         $type = RetributionType::find(15);
         if ($type) {
-            $type->update(['name' => 'Retribusi Jasa Usaha']);
+            $type->update(['name' => 'Retribusi Jasa Usaha', 'is_active' => 1]);
         } else {
             // Try to find by old name if ID 15 is not there
             $type = RetributionType::where('name', 'Retribusi PKD')->first();
             if ($type) {
-                $type->update(['name' => 'Retribusi Jasa Usaha']);
+                $type->update(['name' => 'Retribusi Jasa Usaha', 'is_active' => 1]);
             }
         }
 
@@ -31,17 +31,18 @@ class UpdateJasaUsahaRatesSeeder extends Seeder
             return;
         }
 
-        // 2. Update Classification
-        $classification = RetributionClassification::where('retribution_type_id', $type->id)
-            ->where('name', 'like', '%Penyediaan Tempat Kegiatan Usaha%')
-            ->first();
-
-        if ($classification) {
-            $classification->update([
-                'name' => 'Penyediaan tempat kegiatan usaha (Pasar Grosir, Pertokoan, dll)',
+        // 2. Update or Create Classification
+        $classification = RetributionClassification::updateOrCreate(
+            [
+                'retribution_type_id' => $type->id,
+                'name' => 'Penyediaan tempat kegiatan usaha (Pasar Grosir, Pertokoan, dll)'
+            ],
+            [
+                'opd_id' => $type->opd_id,
+                'code' => 'PTKU',
                 'description' => 'Sesuai Struktur dan Besarnya Tarif Retribusi Jasa Usaha bagian a'
-            ]);
-        }
+            ]
+        );
 
         if (!$classification) {
              $this->command->error('Retribution Classification not found!');
