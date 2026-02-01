@@ -19,6 +19,8 @@ class Taxpayer extends Model
         'nik',
         'name',
         'address',
+        'district',
+        'sub_district',
         'phone',
         'npwpd',
         'object_name',

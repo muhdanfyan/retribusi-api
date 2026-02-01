@@ -52,6 +52,8 @@ class TaxpayerController extends Controller
             'nik' => 'nullable|string|max:20',
             'name' => 'required|string|max:255',
             'address' => 'nullable|string',
+            'district' => 'nullable|string|max:255',
+            'sub_district' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
             'npwpd' => 'nullable|string|max:50',
             'object_name' => 'nullable|string|max:255',
@@ -105,6 +107,8 @@ class TaxpayerController extends Controller
             'nik' => $request->nik,
             'name' => $request->name,
             'address' => $request->address,
+            'district' => $request->district,
+            'sub_district' => $request->sub_district,
             'phone' => $request->phone,
             'npwpd' => $request->npwpd,
             'object_name' => $request->object_name,
@@ -177,6 +181,8 @@ class TaxpayerController extends Controller
                 'nik' => 'nullable|string|max:20',
                 'name' => 'sometimes|string|max:255',
                 'address' => 'nullable|string',
+                'district' => 'nullable|string|max:255',
+                'sub_district' => 'nullable|string|max:255',
                 'phone' => 'nullable|string|max:20',
                 'npwpd' => 'nullable|string|max:50',
                 'object_name' => 'nullable|string|max:255',
@@ -202,7 +208,7 @@ class TaxpayerController extends Controller
         }
 
         $data = $request->only([
-            'nik', 'name', 'address', 'phone', 'npwpd', 
+            'nik', 'name', 'address', 'district', 'sub_district', 'phone', 'npwpd', 
             'object_name', 'object_address', 'is_active'
         ]);
 
