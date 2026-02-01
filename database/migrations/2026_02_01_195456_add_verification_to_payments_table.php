@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('payments', function (Blueprint $table) {
-            $table->foreignId('approved_by')->nullable()->after('amount')->constrained('users')->onDelete('set null');
-            $table->string('proof_url')->nullable()->after('approved_by');
+            if (!Schema::hasColumn('payments', 'approved_by')) {
+                $table->foreignId('approved_by')->nullable()->after('amount')->constrained('users')->onDelete('set null');
+            }
+            if (!Schema::hasColumn('payments', 'proof_url')) {
+                $table->string('proof_url')->nullable()->after('approved_by');
+            }
         });
     }
 

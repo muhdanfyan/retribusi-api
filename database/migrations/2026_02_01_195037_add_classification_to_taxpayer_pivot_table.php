@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('taxpayer_retribution_type', function (Blueprint $table) {
-            $table->foreignId('retribution_classification_id')->nullable()->after('retribution_type_id')->constrained('retribution_classifications')->onDelete('cascade');
+            if (!Schema::hasColumn('taxpayer_retribution_type', 'retribution_classification_id')) {
+                $table->foreignId('retribution_classification_id')->nullable()->after('retribution_type_id')->constrained('retribution_classifications')->onDelete('cascade');
+            }
         });
     }
 
