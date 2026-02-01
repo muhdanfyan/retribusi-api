@@ -22,10 +22,13 @@ class UserController extends Controller
             $query->where('opd_id', $user->opd_id);
         }
 
-        $users = $query->with('opd')->orderBy('name')->get()->map(function ($u) {
-            $u->department = $u->opd?->name;
-            return $u;
-        });
+        $users = $query->with(['opd', 'assignments.retributionType', 'assignments.retributionClassification'])
+            ->orderBy('name')
+            ->get()
+            ->map(function ($u) {
+                $u->department = $u->opd?->name ?? 'All';
+                return $u;
+            });
 
         return response()->json($users);
     }
@@ -63,7 +66,17 @@ class UserController extends Controller
             'status' => $validated['status'],
         ]);
 
-        $user->load('opd');
+        // Handle assignments for petugas
+        if ($user->role === 'petugas' && $request->has('assignments')) {
+            foreach ($request->assignments as $assignment) {
+                $user->assignments()->create([
+                    'retribution_type_id' => $assignment['retribution_type_id'],
+                    'retribution_classification_id' => $assignment['retribution_classification_id'] ?? null,
+                ]);
+            }
+        }
+
+        $user->load(['opd', 'assignments.retributionType', 'assignments.retributionClassification']);
         $user->department = $user->opd?->name ?? 'All';
 
         return response()->json($user, 201);
@@ -116,12 +129,23 @@ class UserController extends Controller
 
         $user->update($validated);
 
+        // Handle assignments for petugas
+        if ($user->role === 'petugas' && $request->has('assignments')) {
+            $user->assignments()->delete();
+            foreach ($request->assignments as $assignment) {
+                $user->assignments()->create([
+                    'retribution_type_id' => $assignment['retribution_type_id'],
+                    'retribution_classification_id' => $assignment['retribution_classification_id'] ?? null,
+                ]);
+            }
+        }
+
         if ($user->role === 'opd' && isset($validated['email'])) {
             // Also update the associated OPD email
             \App\Models\Opd::where('id', $user->opd_id)->update(['email' => $validated['email']]);
         }
 
-        $user->load('opd');
+        $user->load(['opd', 'assignments.retributionType', 'assignments.retributionClassification']);
         $user->department = $user->opd?->name ?? 'All';
 
         return response()->json($user);

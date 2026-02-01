@@ -77,4 +77,12 @@ class User extends Authenticatable
     {
         return $this->role === 'opd';
     }
+
+    /**
+     * Get the retribution assignments for this user
+     */
+    public function assignments()
+    {
+        return $this->hasMany(UserRetributionAssignment::class);
+    }
 }

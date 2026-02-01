@@ -13,6 +13,7 @@ class Bill extends Model
         'tax_object_id',
         'opd_id',
         'retribution_type_id',
+        'retribution_classification_id',
         'bill_number',
         'amount',
         'status',
@@ -48,6 +49,11 @@ class Bill extends Model
     public function retributionType(): BelongsTo
     {
         return $this->belongsTo(RetributionType::class);
+    }
+
+    public function classification(): BelongsTo
+    {
+        return $this->belongsTo(RetributionClassification::class, 'retribution_classification_id');
     }
 
     public function taxObject(): BelongsTo
