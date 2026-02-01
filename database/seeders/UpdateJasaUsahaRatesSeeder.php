@@ -14,15 +14,18 @@ class UpdateJasaUsahaRatesSeeder extends Seeder
      */
     public function run(): void
     {
+        $bapenda = \App\Models\Opd::where('name', 'like', '%Badan Pendapatan Daerah%')->first();
+        $targetOpdId = $bapenda ? $bapenda->id : 4;
+
         // 1. Rename RetributionType 15 to 'Retribusi Jasa Usaha'
         $type = RetributionType::find(15);
         if ($type) {
-            $type->update(['name' => 'Retribusi Jasa Usaha', 'is_active' => 1]);
+            $type->update(['name' => 'Retribusi Jasa Usaha', 'is_active' => 1, 'opd_id' => $targetOpdId]);
         } else {
             // Try to find by old name if ID 15 is not there
             $type = RetributionType::where('name', 'Retribusi PKD')->first();
             if ($type) {
-                $type->update(['name' => 'Retribusi Jasa Usaha', 'is_active' => 1]);
+                $type->update(['name' => 'Retribusi Jasa Usaha', 'is_active' => 1, 'opd_id' => $targetOpdId]);
             }
         }
 
