@@ -1,3 +1,5 @@
+<?php
+
 use App\Http\Controllers\DocumentationController;
 
 Route::get('/', function () {
