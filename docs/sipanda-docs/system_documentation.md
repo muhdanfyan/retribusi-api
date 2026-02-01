@@ -52,14 +52,52 @@ The heart of the system is the `retribusi-api` database. Below is the simplified
 ### Database Relationship Diagram (ERD)
 ```mermaid
 erDiagram
-    OPD ||--o{ USER : "manages"
+    OPD ||--o{ USER : "has"
     OPD ||--o{ TAXPAYER : "registers"
-    OPD ||--o{ RETRIBUTION_TYPE : "defines"
+    OPD ||--o{ RETRIBUTION_TYPE : "manages"
+    
+    USER ||--o{ BILL : "creates"
+    
     TAXPAYER ||--o{ TAX_OBJECT : "owns"
-    RETRIBUTION_TYPE ||--o{ TAX_OBJECT : "categorizes"
-    TAX_OBJECT ||--o{ BILL : "generates"
-    BILL ||--o{ PAYMENT : "settles"
-    TAXPAYER ||--o{ VERIFICATION : "submits"
+    TAXPAYER ||--o{ BILL : "pays"
+    
+    RETRIBUTION_TYPE ||--o{ TAX_OBJECT : "defines"
+    RETRIBUTION_TYPE ||--o{ BILL : "categorizes"
+    
+    TAX_OBJECT ||--o{ BILL : "is_billed_for"
+    TAX_OBJECT ||--o{ VERIFICATION : "needs"
+    
+    BILL ||--o{ PAYMENT : "collects"
+
+    OPD {
+        string name
+        string code
+        string logo_url
+    }
+    TAXPAYER {
+        string nik
+        string name
+        string npwpd
+        string password
+    }
+    TAX_OBJECT {
+        string nop
+        string name
+        string address
+        decimal latitude
+        decimal longitude
+    }
+    BILL {
+        string bill_number
+        decimal amount
+        string status
+        string period
+    }
+    PAYMENT {
+        string transaction_id
+        decimal amount
+        datetime paid_at
+    }
 ```
 
 ---

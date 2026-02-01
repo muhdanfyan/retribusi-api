@@ -1,0 +1,19 @@
+1. SIPANDA Mobile (Wajib Pajak)
+Primary Test User (NIK): 7301010101010001
+Password: password123
+Link: sipanda.online
+
+2. Petugas Multi-Portal (Kasir/Petugas)
+Test Email: kasir@bapenda.go.id
+Password: password123
+Link: petugas.sipanda.online
+
+3. Dashboard Admin (Super Admin)
+Test Email: admin@retribusi.id
+Password: password123
+Link: admin.sipanda.online
+
+4. Admin OPD Bapenda
+Test Email: admin@bapenda.go.id
+Password: password123
+Link: admin.sipanda.online
