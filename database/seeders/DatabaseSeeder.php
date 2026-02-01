@@ -194,6 +194,7 @@ class DatabaseSeeder extends Seeder
             'npwpd' => 'NPWPD-001',
             'object_name' => 'Lahan Parkir Mall',
             'object_address' => 'Jl. Pusat Kota No. 1',
+            'password' => Hash::make('password123'),
             'is_active' => true,
         ]);
         $wp1->retributionTypes()->attach([$parkirMobil->id, $parkirMotor->id]);
@@ -207,6 +208,7 @@ class DatabaseSeeder extends Seeder
             'npwpd' => 'NPWPD-002',
             'object_name' => 'Kios A-01',
             'object_address' => 'Pasar Sentral Blok A',
+            'password' => Hash::make('password123'),
             'is_active' => true,
         ]);
         $wp2->retributionTypes()->attach([$kios->id]);
@@ -220,6 +222,7 @@ class DatabaseSeeder extends Seeder
             'npwpd' => 'NPWPD-003',
             'object_name' => 'Rumah Tinggal',
             'object_address' => 'Jl. Perumahan No. 20',
+            'password' => Hash::make('password123'),
             'is_active' => true,
         ]);
         $wp3->retributionTypes()->attach([$sampah->id]);
