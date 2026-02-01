@@ -142,6 +142,7 @@ class TaxpayerController extends Controller
      */
     public function update(Request $request, Taxpayer $taxpayer)
     {
+        \Log::info('Taxpayer update request for ID: ' . $taxpayer->id, $request->all());
         $user = $request->user();
         $cloudinary = app(\App\Services\CloudinaryService::class);
 
@@ -150,21 +151,29 @@ class TaxpayerController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $request->validate([
-            'nik' => 'nullable|string|max:20',
-            'name' => 'sometimes|string|max:255',
-            'address' => 'nullable|string',
-            'phone' => 'nullable|string|max:20',
-            'npwpd' => 'nullable|string|max:50',
-            'object_name' => 'nullable|string|max:255',
-            'object_address' => 'nullable|string',
-            'is_active' => 'boolean',
-            'retribution_type_ids' => 'sometimes|array|min:1',
-            'retribution_type_ids.*' => 'exists:retribution_types,id',
-            'metadata' => 'nullable',
-            'foto_lokasi_open_kamera' => 'nullable|image|max:5120',
-            'formulir_data_dukung' => 'nullable|file|max:10240',
-        ]);
+        try {
+            $request->validate([
+                'nik' => 'nullable|string|max:20',
+                'name' => 'sometimes|string|max:255',
+                'address' => 'nullable|string',
+                'phone' => 'nullable|string|max:20',
+                'npwpd' => 'nullable|string|max:50',
+                'object_name' => 'nullable|string|max:255',
+                'object_address' => 'nullable|string',
+                'is_active' => 'sometimes',
+                'retribution_type_ids' => 'sometimes|array|min:1',
+                'retribution_type_ids.*' => 'exists:retribution_types,id',
+                'metadata' => 'nullable',
+                'foto_lokasi_open_kamera' => 'nullable|image|max:5120',
+                'formulir_data_dukung' => 'nullable|file|max:10240',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Taxpayer update validation failed', [
+                'errors' => $e->errors(),
+                'input' => $request->all()
+            ]);
+            throw $e;
+        }
 
         $data = $request->only([
             'nik', 'name', 'address', 'phone', 'npwpd', 
