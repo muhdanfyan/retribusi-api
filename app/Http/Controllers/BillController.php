@@ -6,6 +6,7 @@ use App\Models\Bill;
 use App\Models\Taxpayer;
 use App\Models\TaxObject;
 use App\Models\RetributionType;
+use App\Models\RetributionRate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -49,16 +50,12 @@ class BillController extends Controller
     {
         $user = $request->user();
 
-        if ($user->role === 'petugas') {
-            return response()->json(['message' => 'Petugas tidak memiliki wewenang untuk generate tagihan'], 403);
-        }
-
         // Support both new (tax_object_id) and legacy (taxpayer_id + retribution_type_id) flows
         $request->validate([
             'tax_object_id' => 'required_without_all:taxpayer_id,retribution_type_id|exists:tax_objects,id',
             'taxpayer_id' => 'required_without:tax_object_id|exists:taxpayers,id',
             'retribution_type_id' => 'required_without:tax_object_id|exists:retribution_types,id',
-            'amount' => 'required|numeric|min:0',
+            'amount' => 'nullable|numeric|min:0',
             'period' => 'required|string',
             'due_date' => 'required|date',
             'metadata' => 'nullable|array',
@@ -79,7 +76,7 @@ class BillController extends Controller
                 'opd_id' => $taxObject->opd_id,
                 'retribution_type_id' => $taxObject->retribution_type_id,
                 'bill_number' => 'INV-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
-                'amount' => $request->amount,
+                'amount' => $request->amount ?? $this->calculateAmount($taxObject),
                 'status' => 'pending',
                 'period' => $request->period,
                 'metadata' => $request->metadata,
@@ -100,7 +97,7 @@ class BillController extends Controller
                 'opd_id' => $taxpayer->opd_id,
                 'retribution_type_id' => $request->retribution_type_id,
                 'bill_number' => 'INV-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
-                'amount' => $request->amount,
+                'amount' => $request->amount ?? $type->base_amount,
                 'status' => 'pending',
                 'period' => $request->period,
                 'metadata' => $request->metadata,
@@ -120,10 +117,6 @@ class BillController extends Controller
     public function bulkStore(Request $request)
     {
         $user = $request->user();
-        
-        if ($user->role === 'petugas') {
-            return response()->json(['message' => 'Petugas tidak memiliki wewenang untuk bulk generate tagihan'], 403);
-        }
         
         $request->validate([
             'retribution_type_id' => 'required|exists:retribution_types,id',
@@ -151,7 +144,7 @@ class BillController extends Controller
                 'opd_id' => $type->opd_id,
                 'retribution_type_id' => $type->id,
                 'bill_number' => 'INV-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
-                'amount' => $type->base_amount, 
+                'amount' => $this->calculateAmount($obj), 
                 'status' => 'pending',
                 'period' => $request->period,
                 'due_date' => $request->due_date,
@@ -200,5 +193,32 @@ class BillController extends Controller
         return response()->json([
             'data' => $bills
         ]);
+    }
+
+    /**
+     * Helper to calculate bill amount based on tax object hierarchy
+     */
+    private function calculateAmount($taxObject)
+    {
+        // Try to find a specific rate for this classification and zone
+        $rate = RetributionRate::where('retribution_type_id', $taxObject->retribution_type_id)
+            ->where('retribution_classification_id', $taxObject->retribution_classification_id)
+            ->where(function($q) use ($taxObject) {
+                if ($taxObject->zone_id) {
+                    $q->where('zone_id', $taxObject->zone_id);
+                } else {
+                    $q->whereNull('zone_id');
+                }
+            })
+            ->where('is_active', true)
+            ->first();
+
+        if ($rate) {
+            return $rate->amount;
+        }
+
+        // Fallback to base amount of the type
+        $type = RetributionType::find($taxObject->retribution_type_id);
+        return $type ? $type->base_amount : 0;
     }
 }

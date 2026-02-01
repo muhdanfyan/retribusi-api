@@ -13,6 +13,8 @@ class Payment extends Model
         'payment_method',
         'amount',
         'paid_at',
+        'approved_by',
+        'proof_url',
     ];
 
     protected $casts = [
@@ -22,5 +24,10 @@ class Payment extends Model
     public function bill(): BelongsTo
     {
         return $this->belongsTo(Bill::class);
+    }
+
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }

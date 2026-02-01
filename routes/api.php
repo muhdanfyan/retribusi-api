@@ -14,6 +14,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RetributionClassificationController;
 use App\Http\Controllers\RetributionRateController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\TaxObjectController;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,6 +54,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Taxpayers (OPD-scoped)
     Route::apiResource('taxpayers', TaxpayerController::class);
 
+    // Tax Objects (OPD-scoped)
+    Route::apiResource('tax-objects', TaxObjectController::class);
+
     // Billings
     Route::post('/bills/bulk', [BillController::class, 'bulkStore']);
     Route::apiResource('bills', BillController::class)->except(['update', 'destroy']);
@@ -81,5 +86,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/stats', [DashboardController::class, 'getStats']);
         Route::get('/revenue-trend', [DashboardController::class, 'getRevenueTrend']);
         Route::get('/map-potentials', [DashboardController::class, 'getMapPotentials']);
+    });
+
+    // Reporting
+    Route::prefix('reports')->group(function () {
+        Route::get('/summary', [ReportController::class, 'getSummary']);
+        Route::get('/recent', [ReportController::class, 'getRecent']);
     });
 });

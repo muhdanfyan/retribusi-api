@@ -34,6 +34,7 @@ class PaymentController extends Controller
         $request->validate([
             'payment_method' => 'required|string|in:cash,qris,va',
             'amount' => 'required|numeric|min:0',
+            'proof_url' => 'nullable|string',
         ]);
 
         // In a real scenario, we might want to check if amount matches bill amount
@@ -45,6 +46,8 @@ class PaymentController extends Controller
             'payment_method' => $request->payment_method,
             'amount' => $request->amount,
             'paid_at' => Carbon::now(),
+            'approved_by' => $user->id, // Mark as approved by the person recording it (Admin/Petugas)
+            'proof_url' => $request->proof_url,
         ]);
 
         $bill->update([

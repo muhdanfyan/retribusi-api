@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Taxpayer;
+use App\Models\TaxObject;
 use App\Models\RetributionType;
+use App\Models\RetributionClassification;
 use Illuminate\Http\Request;
 
 class TaxpayerController extends Controller
@@ -135,9 +137,15 @@ class TaxpayerController extends Controller
 
             if (empty($typeClassifications)) {
                 $taxpayer->retributionTypes()->attach($typeId, ['retribution_classification_id' => null]);
+                
+                // Also create/update TaxObject
+                $this->syncTaxObject($taxpayer, $typeId, null);
             } else {
                 foreach ($typeClassifications as $cId) {
                     $taxpayer->retributionTypes()->attach($typeId, ['retribution_classification_id' => $cId]);
+                    
+                    // Also create/update TaxObject
+                    $this->syncTaxObject($taxpayer, $typeId, $cId);
                 }
             }
         }
@@ -255,16 +263,18 @@ class TaxpayerController extends Controller
             $classificationIds = (array)$request->input('retribution_classification_ids', []);
 
             foreach ($typeIds as $typeId) {
-                $typeClassifications = \App\Models\RetributionClassification::where('retribution_type_id', $typeId)
+                $typeClassifications = RetributionClassification::where('retribution_type_id', $typeId)
                     ->whereIn('id', $classificationIds)
                     ->pluck('id')
                     ->toArray();
 
                 if (empty($typeClassifications)) {
                     $taxpayer->retributionTypes()->attach($typeId, ['retribution_classification_id' => null]);
+                    $this->syncTaxObject($taxpayer, $typeId, null);
                 } else {
                     foreach ($typeClassifications as $cId) {
                         $taxpayer->retributionTypes()->attach($typeId, ['retribution_classification_id' => $cId]);
+                        $this->syncTaxObject($taxpayer, $typeId, $cId);
                     }
                 }
             }
@@ -293,5 +303,30 @@ class TaxpayerController extends Controller
         return response()->json([
             'message' => 'Wajib pajak berhasil dihapus'
         ]);
+    }
+
+    /**
+     * Helper to sync taxpayer object info to tax_objects table
+     */
+    private function syncTaxObject(Taxpayer $taxpayer, $typeId, $classificationId = null)
+    {
+        if (!$taxpayer->object_name) return;
+
+        $targetObj = TaxObject::updateOrCreate(
+            [
+                'taxpayer_id' => $taxpayer->id,
+                'retribution_type_id' => $typeId,
+                'retribution_classification_id' => $classificationId,
+            ],
+            [
+                'opd_id' => $taxpayer->opd_id,
+                'name' => $taxpayer->object_name,
+                'address' => $taxpayer->object_address ?: $taxpayer->address,
+                'latitude' => $taxpayer->latitude,
+                'longitude' => $taxpayer->longitude,
+                'status' => 'active',
+                'nop' => $taxpayer->npwpd ?: ('NOP-' . str_pad($taxpayer->id, 4, '0', STR_PAD_LEFT) . '-' . str_pad($typeId, 3, '0', STR_PAD_LEFT))
+            ]
+        );
     }
 }
