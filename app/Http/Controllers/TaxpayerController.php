@@ -14,7 +14,7 @@ class TaxpayerController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $query = Taxpayer::with(['opd', 'retributionTypes']);
+        $query = Taxpayer::with(['opd', 'retributionTypes', 'retributionClassifications']);
 
         // Admin OPD and Kasir only see their own OPD's taxpayers
         if ($user && in_array($user->role, ['opd', 'kasir'])) {
@@ -123,16 +123,14 @@ class TaxpayerController extends Controller
 
         // Attach retribution types and classifications
         $typeIds = $validTypesIds;
-        $classificationIds = $request->input('retribution_classification_ids', []);
-        
-        // Combine them into the pivot table
-        // We might have multiple classifications per type, or even just types.
-        // The pivot table now supports (taxpayer_id, type_id, classification_id)
+        $classificationIds = (array)$request->input('retribution_classification_ids', []);
         
         foreach ($typeIds as $typeId) {
-            $typeClassifications = array_filter($classificationIds, function($cId) use ($typeId) {
-                return \App\Models\RetributionClassification::where('id', $cId)->where('retribution_type_id', $typeId)->exists();
-            });
+            // Get classification IDs that belong to this type
+            $typeClassifications = \App\Models\RetributionClassification::where('retribution_type_id', $typeId)
+                ->whereIn('id', $classificationIds)
+                ->pluck('id')
+                ->toArray();
 
             if (empty($typeClassifications)) {
                 $taxpayer->retributionTypes()->attach($typeId, ['retribution_classification_id' => null]);
@@ -145,7 +143,7 @@ class TaxpayerController extends Controller
 
         return response()->json([
             'message' => 'Wajib pajak berhasil ditambahkan',
-            'data' => $taxpayer->load(['opd', 'retributionTypes'])
+            'data' => $taxpayer->load(['opd', 'retributionTypes', 'retributionClassifications'])
         ], 201);
     }
 
@@ -162,7 +160,7 @@ class TaxpayerController extends Controller
         }
 
         return response()->json([
-            'data' => $taxpayer->load(['opd', 'retributionTypes'])
+            'data' => $taxpayer->load(['opd', 'retributionTypes', 'retributionClassifications'])
         ]);
     }
 
@@ -253,12 +251,13 @@ class TaxpayerController extends Controller
 
             $taxpayer->retributionTypes()->detach();
             
-            $classificationIds = $request->input('retribution_classification_ids', []);
+            $classificationIds = (array)$request->input('retribution_classification_ids', []);
 
             foreach ($typeIds as $typeId) {
-                $typeClassifications = array_filter($classificationIds, function($cId) use ($typeId) {
-                    return \App\Models\RetributionClassification::where('id', $cId)->where('retribution_type_id', $typeId)->exists();
-                });
+                $typeClassifications = \App\Models\RetributionClassification::where('retribution_type_id', $typeId)
+                    ->whereIn('id', $classificationIds)
+                    ->pluck('id')
+                    ->toArray();
 
                 if (empty($typeClassifications)) {
                     $taxpayer->retributionTypes()->attach($typeId, ['retribution_classification_id' => null]);
@@ -272,7 +271,7 @@ class TaxpayerController extends Controller
 
         return response()->json([
             'message' => 'Wajib pajak berhasil diupdate',
-            'data' => $taxpayer->fresh()->load(['opd', 'retributionTypes'])
+            'data' => $taxpayer->fresh()->load(['opd', 'retributionTypes', 'retributionClassifications'])
         ]);
     }
 
