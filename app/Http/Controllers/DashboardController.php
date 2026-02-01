@@ -129,6 +129,8 @@ class DashboardController extends Controller
                 'agency' => $obj->opd->name ?? 'N/A',
                 'address' => $obj->address,
                 'status' => $obj->status,
+                'icon' => $obj->retributionType->icon ?? null,
+                'retribution_type_id' => $obj->retribution_type_id,
             ];
         });
 
