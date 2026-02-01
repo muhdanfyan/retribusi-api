@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('opd_id')->constrained()->onDelete('cascade');
             $table->string('name');
-            $table->string('category')->nullable();
+            $table->string('category')->nullable(); // pajak_daerah, retribusi_daerah
+            $table->decimal('tariff_percent', 5, 2)->default(0);
             $table->string('icon')->nullable();  // Icon name/URL untuk mobile app
-            $table->decimal('base_amount', 15, 2);
+            $table->decimal('base_amount', 15, 2)->default(0);
             $table->string('unit')->default('per_bulan');
             $table->boolean('is_active')->default(true);
             $table->timestamps();

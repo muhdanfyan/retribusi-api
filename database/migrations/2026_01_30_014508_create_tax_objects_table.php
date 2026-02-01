@@ -24,8 +24,16 @@ return new class extends Migration
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
             
+            $table->string('nomor_formulir')->nullable(); // No Formulir SPOPD
+            $table->string('transaction_type')->default('perekaman_data'); // perekaman_data, pemutakhiran_data, penghapusan_data
+            
             $table->json('metadata')->nullable(); // For flexible fields (size, power, etc)
             $table->string('status')->default('pending'); // pending, active, inactive, rejected
+            
+            // Pernyataan Subjek Pajak
+            $table->string('nama_penandatangan')->nullable();
+            $table->date('tanggal_pernyataan')->nullable();
+            $table->string('tanda_tangan_url')->nullable();
             
             $table->timestamp('approved_at')->nullable();
             $table->foreignId('approved_by')->nullable()->constrained('users')->onDelete('set null');

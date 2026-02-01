@@ -22,7 +22,12 @@ class TaxObject extends Model
         'address',
         'latitude',
         'longitude',
+        'nomor_formulir',
+        'transaction_type',
         'metadata',
+        'nama_penandatangan',
+        'tanggal_pernyataan',
+        'tanda_tangan_url',
         'status',
         'approved_at',
         'approved_by',
@@ -89,5 +94,13 @@ class TaxObject extends Model
     public function bills(): HasMany
     {
         return $this->hasMany(Bill::class);
+    }
+
+    /**
+     * Get all verifications for this object
+     */
+    public function verifications(): HasMany
+    {
+        return $this->hasMany(ObjectVerification::class);
     }
 }

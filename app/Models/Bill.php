@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Bill extends Model
 {
     protected $fillable = [
-        'user_id',
         'taxpayer_id',
         'tax_object_id',
         'opd_id',
@@ -18,12 +17,16 @@ class Bill extends Model
         'amount',
         'status',
         'period',
+        'period_start',
+        'period_end',
         'metadata',
         'due_date',
     ];
 
     protected $casts = [
         'due_date' => 'datetime',
+        'period_start' => 'date',
+        'period_end' => 'date',
         'metadata' => 'json',
     ];
 

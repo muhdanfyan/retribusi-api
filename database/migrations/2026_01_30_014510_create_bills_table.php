@@ -13,12 +13,17 @@ return new class extends Migration
     {
         Schema::create('bills', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // The citizen
+            $table->foreignId('taxpayer_id')->constrained()->onDelete('cascade');
+            $table->foreignId('tax_object_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('retribution_type_id')->constrained();
             $table->string('bill_number')->unique();
             $table->decimal('amount', 15, 2);
             $table->string('status')->default('pending'); // pending, paid, expired
-            $table->string('period'); // e.g., "Januari 2026"
+            
+            $table->string('period')->nullable(); // e.g., "Januari 2026"
+            $table->date('period_start')->nullable();
+            $table->date('period_end')->nullable();
+            
             $table->json('metadata')->nullable(); // For plate numbers, kiosk IDs, etc.
             $table->timestamp('due_date');
             $table->timestamps();

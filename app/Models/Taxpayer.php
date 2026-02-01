@@ -51,7 +51,17 @@ class Taxpayer extends Model
     public function retributionTypes(): BelongsToMany
     {
         return $this->belongsToMany(RetributionType::class, 'taxpayer_retribution_type')
-            ->withPivot(['custom_amount', 'notes'])
+            ->withPivot(['retribution_classification_id', 'custom_amount', 'notes'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get all retribution classifications for this taxpayer (many-to-many)
+     */
+    public function retributionClassifications(): BelongsToMany
+    {
+        return $this->belongsToMany(RetributionClassification::class, 'taxpayer_retribution_type')
+            ->withPivot(['retribution_type_id', 'custom_amount', 'notes'])
             ->withTimestamps();
     }
 

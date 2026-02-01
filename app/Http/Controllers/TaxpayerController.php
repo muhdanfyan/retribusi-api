@@ -59,6 +59,8 @@ class TaxpayerController extends Controller
             'is_active' => 'sometimes',
             'retribution_type_ids' => 'required|array|min:1',
             'retribution_type_ids.*' => 'exists:retribution_types,id',
+            'retribution_classification_ids' => 'nullable|array',
+            'retribution_classification_ids.*' => 'exists:retribution_classifications,id',
             'metadata' => 'nullable',
             'foto_lokasi_open_kamera' => 'nullable|image|max:5120',
             'formulir_data_dukung' => 'nullable|file|max:10240',
@@ -111,8 +113,27 @@ class TaxpayerController extends Controller
             'metadata' => $metadata,
         ]);
 
-        // Attach retribution types
-        $taxpayer->retributionTypes()->attach($validTypesIds);
+        // Attach retribution types and classifications
+        $typeIds = $validTypesIds;
+        $classificationIds = $request->input('retribution_classification_ids', []);
+        
+        // Combine them into the pivot table
+        // We might have multiple classifications per type, or even just types.
+        // The pivot table now supports (taxpayer_id, type_id, classification_id)
+        
+        foreach ($typeIds as $typeId) {
+            $typeClassifications = array_filter($classificationIds, function($cId) use ($typeId) {
+                return \App\Models\RetributionClassification::where('id', $cId)->where('retribution_type_id', $typeId)->exists();
+            });
+
+            if (empty($typeClassifications)) {
+                $taxpayer->retributionTypes()->attach($typeId, ['retribution_classification_id' => null]);
+            } else {
+                foreach ($typeClassifications as $cId) {
+                    $taxpayer->retributionTypes()->attach($typeId, ['retribution_classification_id' => $cId]);
+                }
+            }
+        }
 
         return response()->json([
             'message' => 'Wajib pajak berhasil ditambahkan',
@@ -163,6 +184,8 @@ class TaxpayerController extends Controller
                 'is_active' => 'sometimes',
                 'retribution_type_ids' => 'sometimes|array|min:1',
                 'retribution_type_ids.*' => 'exists:retribution_types,id',
+                'retribution_classification_ids' => 'sometimes|array',
+                'retribution_classification_ids.*' => 'exists:retribution_classifications,id',
                 'metadata' => 'nullable',
                 'foto_lokasi_open_kamera' => 'nullable|image|max:5120',
                 'formulir_data_dukung' => 'nullable|file|max:10240',
@@ -216,7 +239,23 @@ class TaxpayerController extends Controller
                 ], 422);
             }
 
-            $taxpayer->retributionTypes()->sync($typeIds);
+            $taxpayer->retributionTypes()->detach();
+            
+            $classificationIds = $request->input('retribution_classification_ids', []);
+
+            foreach ($typeIds as $typeId) {
+                $typeClassifications = array_filter($classificationIds, function($cId) use ($typeId) {
+                    return \App\Models\RetributionClassification::where('id', $cId)->where('retribution_type_id', $typeId)->exists();
+                });
+
+                if (empty($typeClassifications)) {
+                    $taxpayer->retributionTypes()->attach($typeId, ['retribution_classification_id' => null]);
+                } else {
+                    foreach ($typeClassifications as $cId) {
+                        $taxpayer->retributionTypes()->attach($typeId, ['retribution_classification_id' => $cId]);
+                    }
+                }
+            }
         }
 
         return response()->json([

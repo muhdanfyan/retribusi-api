@@ -16,6 +16,7 @@ class RetributionType extends Model
         'opd_id',
         'name',
         'category',
+        'tariff_percent',
         'icon',
         'base_amount',
         'unit',
@@ -26,6 +27,7 @@ class RetributionType extends Model
 
     protected $casts = [
         'base_amount' => 'decimal:2',
+        'tariff_percent' => 'decimal:2',
         'is_active' => 'boolean',
         'form_schema' => 'array',
         'requirements' => 'array',
