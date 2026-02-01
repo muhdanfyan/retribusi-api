@@ -172,7 +172,10 @@ class TaxpayerController extends Controller
                 'errors' => $e->errors(),
                 'input' => $request->all()
             ]);
-            throw $e;
+            return response()->json([
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors()
+            ], 422);
         }
 
         $data = $request->only([
