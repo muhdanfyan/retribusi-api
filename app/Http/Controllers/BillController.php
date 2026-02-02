@@ -141,6 +141,7 @@ class BillController extends Controller
         
         $request->validate([
             'retribution_type_id' => 'required|exists:retribution_types,id',
+            'retribution_classification_id' => 'nullable|exists:retribution_classifications,id',
             'period' => 'required|string',
             'due_date' => 'required|date',
         ]);
@@ -152,9 +153,14 @@ class BillController extends Controller
         }
 
         // Get all active tax objects for this type
-        $objects = TaxObject::where('retribution_type_id', $type->id)
-            ->where('status', 'active')
-            ->get();
+        $query = TaxObject::where('retribution_type_id', $type->id)
+            ->where('status', 'active');
+            
+        if ($request->retribution_classification_id) {
+            $query->where('retribution_classification_id', $request->retribution_classification_id);
+        }
+
+        $objects = $query->get();
 
         $createdCount = 0;
         foreach ($objects as $obj) {
