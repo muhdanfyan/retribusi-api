@@ -46,7 +46,11 @@ class ImportPetugasSeeder extends Seeder
 
             $name = trim($data[1]);
             $email = trim($data[4]);
-            $phone = !empty($data[5]) ? trim($data[5]) : null;
+            $rawPhone = !empty($data[5]) ? trim($data[5]) : null;
+            $phone = $rawPhone ? str_replace(' ', '', $rawPhone) : null;
+            
+            // Per user request: Use phone number as password (fallback to default if no phone)
+            $password = $phone ? Hash::make($phone) : Hash::make('sipanda123');
 
             User::updateOrCreate(
                 ['email' => $email],
@@ -56,7 +60,7 @@ class ImportPetugasSeeder extends Seeder
                     'role' => 'petugas',
                     'opd_id' => $bapenda->id,
                     'status' => 'active',
-                    'phone' => $phone,
+                    'phone' => $rawPhone,
                     'nik' => null, // NIK not in CSV, will be filled manually via UI
                 ]
             );
