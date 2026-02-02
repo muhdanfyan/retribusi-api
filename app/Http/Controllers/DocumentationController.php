@@ -21,14 +21,13 @@ class DocumentationController extends Controller
      */
     public function show($page)
     {
+        // Remove .md if present in the page parameter to avoid duplication
+        $page = str_replace('.md', '', $page);
+        
         $path = base_path("docs/sipanda-docs/{$page}.md");
 
         if (!File::exists($path)) {
-            // Try with .md extension if not provided, or fallback to README
-            $path = base_path("docs/sipanda-docs/{$page}.md");
-            if (!File::exists($path)) {
-                abort(404);
-            }
+            abort(404);
         }
 
         $content = File::get($path);

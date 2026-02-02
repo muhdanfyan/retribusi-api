@@ -63,38 +63,63 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const rawContent = document.getElementById('raw-markdown').textContent;
-            
-            // Configure marked to handle relative image paths
-            const renderer = new marked.Renderer();
-            renderer.image = function(href, title, text) {
-                // If it's a relative path in our docs folder, route it through our asset controller
-                if (!href.startsWith('http') && !href.startsWith('/') && !href.startsWith('file')) {
-                    href = "{{ url('/docs/assets') }}/" + href;
-                }
-                return `<img src="${href}" alt="${text || ''}" title="${title || ''}">`;
-            };
-
-            const htmlContent = marked.parse(rawContent, { renderer: renderer });
-            
             const article = document.getElementById('markdown-content');
-            article.innerHTML = htmlContent;
+            
+            try {
+                // Configure marked to handle relative image paths
+                const renderer = new marked.Renderer();
+                const originalImage = renderer.image.bind(renderer);
+                
+                renderer.image = function(hrefOrObj, title, text) {
+                    let href = typeof hrefOrObj === 'object' ? hrefOrObj.href : hrefOrObj;
+                    let imgTitle = typeof hrefOrObj === 'object' ? hrefOrObj.title : title;
+                    let imgText = typeof hrefOrObj === 'object' ? hrefOrObj.text : text;
 
-            // Initialize Mermaid
-            mermaid.initialize({ 
-                startOnLoad: true,
-                theme: 'neutral',
-                securityLevel: 'loose'
-            });
+                    // If it's a relative path in our docs folder, route it through our asset controller
+                    if (href && !href.startsWith('http') && !href.startsWith('/') && !href.startsWith('file')) {
+                        href = "{{ url('/docs/assets') }}/" + href;
+                    }
+                    
+                    return `<img src="${href}" alt="${imgText || ''}" title="${imgTitle || ''}">`;
+                };
 
-            // Re-render Mermaid diagrams if any were parsed from markdown
-            const mermaidBlocks = article.querySelectorAll('.language-mermaid');
-            mermaidBlocks.forEach((block, i) => {
-                const content = block.textContent;
-                const container = document.createElement('div');
-                container.className = 'mermaid';
-                container.innerHTML = content;
-                block.parentNode.replaceChild(container, block);
-            });
+                marked.use({ renderer });
+                const htmlContent = marked.parse(rawContent);
+                
+                article.innerHTML = htmlContent;
+
+                // Initialize Mermaid
+                mermaid.initialize({ 
+                    startOnLoad: true,
+                    theme: 'neutral',
+                    securityLevel: 'loose'
+                });
+
+                // Re-render Mermaid diagrams if any were parsed from markdown
+                const mermaidBlocks = article.querySelectorAll('.language-mermaid');
+                mermaidBlocks.forEach((block, i) => {
+                    const content = block.textContent;
+                    const container = document.createElement('div');
+                    container.className = 'mermaid';
+                    container.innerHTML = content;
+                    block.parentNode.replaceChild(container, block);
+                });
+                
+                // Explicitly run mermaid to ensure rendering
+                if (mermaidBlocks.length > 0) {
+                    mermaid.init(undefined, article.querySelectorAll('.mermaid'));
+                }
+
+            } catch (error) {
+                console.error('Failed to render documentation:', error);
+                article.innerHTML = `
+                    <div class="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl">
+                        <h3 class="font-bold text-lg mb-2">Gagal memuat dokumentasi</h3>
+                        <p class="text-sm">Terjadi kesalahan saat memproses konten dokumentasi. Silakan periksa format file markdown.</p>
+                        <pre class="mt-4 p-3 bg-red-100/50 rounded text-xs overflow-auto">${error.message}</pre>
+                    </div>
+                `;
+            }
         });
     </script>
 </body>
