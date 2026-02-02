@@ -47,6 +47,8 @@ class UserController extends Controller
             'role' => ['required', 'string', Rule::in(['super_admin', 'opd', 'verifikator', 'petugas', 'viewer'])],
             'opd_id' => 'nullable|exists:opds,id',
             'status' => ['required', Rule::in(['active', 'inactive'])],
+            'nik' => 'nullable|string|max:50',
+            'phone' => 'nullable|string|max:20',
         ]);
 
         // If not super_admin, force same opd_id and restrict role elevation
@@ -64,6 +66,8 @@ class UserController extends Controller
             'role' => $validated['role'],
             'opd_id' => $validated['opd_id'] ?: null,
             'status' => $validated['status'],
+            'nik' => $validated['nik'] ?? null,
+            'phone' => $validated['phone'] ?? null,
         ]);
 
         // Handle assignments for petugas
@@ -114,6 +118,8 @@ class UserController extends Controller
             'role' => ['sometimes', 'required', 'string', Rule::in(['super_admin', 'opd', 'verifikator', 'petugas', 'viewer'])],
             'opd_id' => 'nullable|exists:opds,id',
             'status' => ['sometimes', 'required', Rule::in(['active', 'inactive'])],
+            'nik' => 'nullable|string|max:50',
+            'phone' => 'nullable|string|max:20',
         ]);
 
         if (!$loggedInUser->isSuperAdmin()) {

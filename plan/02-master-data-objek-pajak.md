@@ -1,10 +1,10 @@
-# Master Data Objek Retribusi dan Pajak
+# Master Data Objek Pajak dan Retribusi
 ## Pemerintah Kota Bau-Bau
 
 ---
 
 > [!NOTE]
-> **Dokumen ini berisi data objek retribusi dan pajak yang dikelola oleh BAPENDA (Badan Pendapatan Daerah) Kota Bau-Bau.**
+> **Dokumen ini berisi data objek pajak dan retribusi yang dikelola oleh BAPENDA (Badan Pendapatan Daerah) Kota Bau-Bau.**
 > 
 > Untuk tahap awal implementasi, sistem akan fokus pada objek-objek berikut yang berada di bawah pengelolaan BAPENDA:
 > 
