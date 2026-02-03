@@ -134,7 +134,7 @@ class RetributionClassificationController extends Controller
         ]);
     }
 
-    public function destroy(RetributionClassification $retributionClassification)
+    public function destroy(Request $request, RetributionClassification $retributionClassification)
     {
         $user = $request->user();
         if ($user->role !== 'super_admin' && $retributionClassification->opd_id !== $user->opd_id) {
