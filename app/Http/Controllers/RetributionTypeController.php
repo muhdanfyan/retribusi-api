@@ -56,8 +56,6 @@ class RetributionTypeController extends Controller
             'base_amount' => 'required|numeric|min:0',
             'unit' => 'required|string|max:50',
             'is_active' => 'boolean',
-            'form_schema' => 'nullable|string',
-            'requirements' => 'nullable|string',
         ]);
 
         // Use user's OPD for non-super-admins, or require opd_id for super_admin
@@ -80,8 +78,6 @@ class RetributionTypeController extends Controller
             'base_amount' => $request->base_amount,
             'unit' => $request->unit,
             'is_active' => $request->boolean('is_active', true),
-            'form_schema' => $request->form_schema ? json_decode($request->form_schema, true) : null,
-            'requirements' => $request->requirements ? json_decode($request->requirements, true) : null,
         ]);
 
         return response()->json([
@@ -122,13 +118,6 @@ class RetributionTypeController extends Controller
         $data = $request->only([
             'name', 'category', 'base_amount', 'unit', 'is_active'
         ]);
-
-        if ($request->has('form_schema')) {
-            $data['form_schema'] = json_decode($request->form_schema, true);
-        }
-        if ($request->has('requirements')) {
-            $data['requirements'] = json_decode($request->requirements, true);
-        }
 
         if ($request->hasFile('icon')) {
             // Delete old icon if replaced

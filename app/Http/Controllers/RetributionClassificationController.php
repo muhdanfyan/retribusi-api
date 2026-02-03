@@ -46,6 +46,8 @@ class RetributionClassificationController extends Controller
             'code' => 'required|string|max:10',
             'description' => 'nullable|string',
             'icon' => 'nullable|image|max:2048',
+            'form_schema' => 'nullable|string',
+            'requirements' => 'nullable|string',
         ]);
 
         $cloudinary = app(\App\Services\CloudinaryService::class);
@@ -68,6 +70,8 @@ class RetributionClassificationController extends Controller
             'code' => $request->code,
             'icon' => $iconPath,
             'description' => $request->description,
+            'form_schema' => $request->form_schema ? json_decode($request->form_schema, true) : null,
+            'requirements' => $request->requirements ? json_decode($request->requirements, true) : null,
         ]);
 
         return response()->json([
@@ -94,6 +98,8 @@ class RetributionClassificationController extends Controller
             'code' => 'sometimes|string|max:10',
             'description' => 'nullable|string',
             'icon' => 'nullable|image|max:2048',
+            'form_schema' => 'nullable|string',
+            'requirements' => 'nullable|string',
         ]);
 
         $data = $request->all();
@@ -101,6 +107,13 @@ class RetributionClassificationController extends Controller
         if ($request->hasFile('icon')) {
             $cloudinary = app(\App\Services\CloudinaryService::class);
             $data['icon'] = $cloudinary->upload($request->file('icon'), 'classifications');
+        }
+
+        if ($request->has('form_schema')) {
+            $data['form_schema'] = json_decode($request->form_schema, true);
+        }
+        if ($request->has('requirements')) {
+            $data['requirements'] = json_decode($request->requirements, true);
         }
 
         $retributionClassification->update($data);

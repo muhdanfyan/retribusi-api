@@ -13,6 +13,13 @@ class RetributionClassification extends Model
         'code',
         'description',
         'icon',
+        'form_schema',
+        'requirements',
+    ];
+
+    protected $casts = [
+        'form_schema' => 'array',
+        'requirements' => 'array',
     ];
 
 

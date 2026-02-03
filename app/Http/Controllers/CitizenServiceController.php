@@ -20,7 +20,7 @@ class CitizenServiceController extends Controller
         $taxpayer = $request->user();
         
         $services = RetributionType::where('is_active', true)
-            ->with('opd:id,name,code')
+            ->with(['opd:id,name,code', 'classifications'])
             ->orderBy('name')
             ->get()
             ->map(function ($service) use ($taxpayer) {
@@ -38,8 +38,8 @@ class CitizenServiceController extends Controller
                     'opd' => $service->opd,
                     'object_count' => $objects->count(),
                     'active_objects_count' => $objects->where('status', 'active')->count(),
-                    'form_schema' => $service->form_schema,
-                    'requirements' => $service->requirements,
+                    'active_objects_count' => $objects->where('status', 'active')->count(),
+                    'classifications' => $service->classifications,
                 ];
             });
 
@@ -53,7 +53,7 @@ class CitizenServiceController extends Controller
     {
         $taxpayer = $request->user();
         
-        $service = RetributionType::with('opd:id,name,code')->findOrFail($id);
+        $service = RetributionType::with(['opd:id,name,code', 'classifications'])->findOrFail($id);
         
         $objects = TaxObject::where('taxpayer_id', $taxpayer->id)
             ->where('retribution_type_id', $service->id)
@@ -82,8 +82,9 @@ class CitizenServiceController extends Controller
                 'base_amount' => $service->base_amount,
                 'unit' => $service->unit,
                 'opd' => $service->opd,
-                'form_schema' => $service->form_schema,
-                'requirements' => $service->requirements,
+                'unit' => $service->unit,
+                'opd' => $service->opd,
+                'classifications' => $service->classifications,
                 'objects' => $objects,
                 'bills' => $bills,
             ]
@@ -113,8 +114,9 @@ class CitizenServiceController extends Controller
             $metadata = json_decode($metadata, true) ?: [];
         }
 
-        // Handle dynamic document uploads based on requirements
-        $requirements = $service->requirements ?: [];
+        // Handle dynamic document uploads based on requirements from first classification
+        $classification = $service->classifications->first();
+        $requirements = $classification->requirements ?? [];
         foreach ($requirements as $req) {
             $key = $req['key'] ?? null;
             if ($key && $request->hasFile($key)) {

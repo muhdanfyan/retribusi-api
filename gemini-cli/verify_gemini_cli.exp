@@ -1,0 +1,25 @@
+#!/usr/bin/expect -f
+set timeout 30
+set password "Sipanda123#"
+set host "157.10.252.74"
+set user "sipanda"
+
+spawn ssh $user@$host
+expect "password:"
+send "$password\r"
+expect "$ "
+send "source /home/sipanda/.bashrc\r"
+expect "$ "
+send "gemini \"Say 'Verification Success' if you are working correctly.\"\r"
+expect {
+    "Verification Success" {
+        send "exit\r"
+        expect eof
+        exit 0
+    }
+    timeout {
+        send "exit\r"
+        expect eof
+        exit 1
+    }
+}

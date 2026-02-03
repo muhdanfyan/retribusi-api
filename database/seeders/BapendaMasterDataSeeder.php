@@ -68,8 +68,6 @@ class BapendaMasterDataSeeder extends Seeder
                     'category' => $info['cat'],
                     'icon' => $info['icon'],
                     'is_active' => true,
-                    'form_schema' => $unifiedSchema,
-                    'requirements' => $unifiedRequirements,
                 ]
             );
         }
@@ -86,20 +84,35 @@ class BapendaMasterDataSeeder extends Seeder
         foreach ($pbjtSubs as $name => $code) {
             RetributionClassification::updateOrCreate(
                 ['retribution_type_id' => $typeModels['PBJT']->id, 'name' => $name],
-                ['opd_id' => $bapenda->id, 'code' => $code]
+                [
+                    'opd_id' => $bapenda->id, 
+                    'code' => $code,
+                    'form_schema' => $unifiedSchema,
+                    'requirements' => $unifiedRequirements,
+                ]
             );
         }
 
         $pkdCls = RetributionClassification::updateOrCreate(
             ['retribution_type_id' => $typeModels['Retribusi PKD']->id, 'name' => 'Penyediaan Tempat Kegiatan Usaha'],
-            ['opd_id' => $bapenda->id, 'code' => 'PTKU']
+            [
+                'opd_id' => $bapenda->id, 
+                'code' => 'PTKU',
+                'form_schema' => $unifiedSchema,
+                'requirements' => $unifiedRequirements,
+            ]
         );
 
         foreach ($typeModels as $typeName => $model) {
             if ($typeName === 'PBJT' || $typeName === 'Retribusi PKD') continue;
             RetributionClassification::updateOrCreate(
                 ['retribution_type_id' => $model->id, 'name' => $typeName],
-                ['opd_id' => $bapenda->id, 'code' => $model->category === 'Pajak' ? 'TAX' : 'RET']
+                [
+                    'opd_id' => $bapenda->id, 
+                    'code' => $model->category === 'Pajak' ? 'TAX' : 'RET',
+                    'form_schema' => $unifiedSchema,
+                    'requirements' => $unifiedRequirements,
+                ]
             );
         }
 

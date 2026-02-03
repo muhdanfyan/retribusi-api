@@ -21,16 +21,12 @@ class RetributionType extends Model
         'base_amount',
         'unit',
         'is_active',
-        'form_schema',
-        'requirements',
     ];
 
     protected $casts = [
         'base_amount' => 'decimal:2',
         'tariff_percent' => 'decimal:2',
         'is_active' => 'boolean',
-        'form_schema' => 'array',
-        'requirements' => 'array',
     ];
 
     /**
