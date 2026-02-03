@@ -18,7 +18,7 @@ class RetributionClassificationController extends Controller
             $query->where('opd_id', $user->opd_id);
             
             $assignments = $user->assignments;
-            if ($assignments) {
+            if ($assignments && $assignments->count() > 0) {
                 $query->where(function($q) use ($assignments) {
                     foreach ($assignments as $assignment) {
                         $q->orWhere(function($sq) use ($assignment) {

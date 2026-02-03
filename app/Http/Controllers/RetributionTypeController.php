@@ -28,9 +28,11 @@ class RetributionTypeController extends Controller
             $query->where('opd_id', $user->opd_id);
         } elseif ($user && $user->role === 'petugas') {
             $query->where('opd_id', $user->opd_id);
-            // Filter by assigned types
-            $assignedTypeIds = $user->assignments->pluck('retribution_type_id')->unique()->toArray();
-            $query->whereIn('id', $assignedTypeIds);
+            // Filter by assigned types if any exist
+            $assignedTypeIds = $user->assignments->pluck('retribution_type_id')->filter()->unique()->toArray();
+            if (!empty($assignedTypeIds)) {
+                $query->whereIn('id', $assignedTypeIds);
+            }
         }
 
         if ($request->has('is_active')) {
