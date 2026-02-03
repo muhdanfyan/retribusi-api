@@ -105,6 +105,7 @@ class CitizenServiceController extends Controller
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
             'zone_id' => 'nullable|exists:zones,id',
+            'classification_id' => 'nullable|exists:retribution_classifications,id',
             'metadata' => 'nullable',
         ]);
 
@@ -114,9 +115,16 @@ class CitizenServiceController extends Controller
             $metadata = json_decode($metadata, true) ?: [];
         }
 
-        // Handle dynamic document uploads based on requirements from first classification
-        $classification = $service->classifications->first();
-        $requirements = $classification->requirements ?? [];
+        $classificationId = $request->input('classification_id');
+        $classification = null;
+        if ($classificationId) {
+            $classification = \App\Models\RetributionClassification::find($classificationId);
+        } else {
+            $classification = $service->classifications->first();
+        }
+
+        // Handle dynamic document uploads based on requirements from specific classification
+        $requirements = $classification ? ($classification->requirements ?? []) : [];
         foreach ($requirements as $req) {
             $key = $req['key'] ?? null;
             if ($key && $request->hasFile($key)) {
@@ -140,6 +148,7 @@ class CitizenServiceController extends Controller
         $taxObject = TaxObject::create([
             'taxpayer_id' => $taxpayer->id,
             'retribution_type_id' => $service->id,
+            'retribution_classification_id' => $classification ? $classification->id : null,
             'opd_id' => $service->opd_id,
             'zone_id' => $request->zone_id,
             'name' => $request->name,
