@@ -13,78 +13,77 @@ use Carbon\Carbon;
 class CitizenServiceController extends Controller
 {
     /**
-     * List all active services with registration count for the logged-in citizen
+     * List all active classifications for the logged-in citizen
      */
     public function index(Request $request)
     {
         $taxpayer = $request->user();
         
-        $services = RetributionType::where('is_active', true)
-            ->with(['opd:id,name,code', 'classifications'])
-            ->orderBy('name')
+        $classifications = \App\Models\RetributionClassification::whereHas('retributionType', function($q) {
+                $q->where('is_active', true);
+            })
+            ->with(['retributionType.opd'])
             ->get()
-            ->map(function ($service) use ($taxpayer) {
+            ->map(function ($cls) use ($taxpayer) {
                 $objects = TaxObject::where('taxpayer_id', $taxpayer->id)
-                    ->where('retribution_type_id', $service->id)
+                    ->where('retribution_classification_id', $cls->id)
                     ->get();
                 
                 return [
-                    'id' => $service->id,
-                    'name' => $service->name,
-                    'category' => $service->category,
-                    'icon' => $service->icon,
-                    'base_amount' => $service->base_amount,
-                    'unit' => $service->unit,
-                    'opd' => $service->opd,
+                    'id' => $cls->id,
+                    'name' => $cls->name,
+                    'type_id' => $cls->retribution_type_id,
+                    'type_name' => $cls->retributionType->name,
+                    'category' => $cls->retributionType->category,
+                    'icon' => $cls->icon ?: $cls->retributionType->icon,
+                    'base_amount' => $cls->retributionType->base_amount,
+                    'unit' => $cls->retributionType->unit,
+                    'opd' => $cls->retributionType->opd,
                     'object_count' => $objects->count(),
                     'active_objects_count' => $objects->where('status', 'active')->count(),
-                    'active_objects_count' => $objects->where('status', 'active')->count(),
-                    'classifications' => $service->classifications,
                 ];
             });
 
-        return response()->json(['data' => $services]);
+        return response()->json(['data' => $classifications]);
     }
 
     /**
-     * Get service detail with list of objects and bills
+     * Get classification detail with list of objects and bills
      */
     public function show(Request $request, $id)
     {
         $taxpayer = $request->user();
         
-        $service = RetributionType::with(['opd:id,name,code', 'classifications'])->findOrFail($id);
+        $classification = \App\Models\RetributionClassification::with(['retributionType.opd'])
+            ->findOrFail($id);
+        
+        $service = $classification->retributionType;
         
         $objects = TaxObject::where('taxpayer_id', $taxpayer->id)
-            ->where('retribution_type_id', $service->id)
+            ->where('retribution_classification_id', $classification->id)
             ->with('zone')
             ->get();
         
         $objectIds = $objects->pluck('id');
         
         $bills = Bill::whereIn('tax_object_id', $objectIds)
-            ->orWhere(function($q) use ($taxpayer, $service) {
-                // Backward compatibility for old bills linked directly to taxpayer
-                $q->where('taxpayer_id', $taxpayer->id)
-                  ->where('retribution_type_id', $service->id)
-                  ->whereNull('tax_object_id');
-            })
-            ->with('opd:id,name')
+            ->with(['opd:id,name', 'taxObject'])
             ->latest()
             ->get();
 
         return response()->json([
             'data' => [
-                'id' => $service->id,
-                'name' => $service->name,
+                'id' => $classification->id,
+                'name' => $classification->name,
+                'type_id' => $service->id,
+                'type_name' => $service->name,
                 'category' => $service->category,
-                'icon' => $service->icon,
+                'icon' => $classification->icon ?: $service->icon,
                 'base_amount' => $service->base_amount,
                 'unit' => $service->unit,
                 'opd' => $service->opd,
-                'unit' => $service->unit,
-                'opd' => $service->opd,
-                'classifications' => $service->classifications,
+                'form_schema' => $classification->form_schema,
+                'requirements' => $classification->requirements,
                 'objects' => $objects,
                 'bills' => $bills,
             ]
@@ -92,12 +91,13 @@ class CitizenServiceController extends Controller
     }
 
     /**
-     * Register a new tax object for a service
+     * Register a new tax object for a classification
      */
     public function register(Request $request, $id)
     {
         $taxpayer = $request->user();
-        $service = RetributionType::findOrFail($id);
+        $classification = \App\Models\RetributionClassification::with('retributionType')->findOrFail($id);
+        $service = $classification->retributionType;
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -105,7 +105,6 @@ class CitizenServiceController extends Controller
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
             'zone_id' => 'nullable|exists:zones,id',
-            'classification_id' => 'nullable|exists:retribution_classifications,id',
             'metadata' => 'nullable',
         ]);
 
@@ -115,16 +114,8 @@ class CitizenServiceController extends Controller
             $metadata = json_decode($metadata, true) ?: [];
         }
 
-        $classificationId = $request->input('classification_id');
-        $classification = null;
-        if ($classificationId) {
-            $classification = \App\Models\RetributionClassification::find($classificationId);
-        } else {
-            $classification = $service->classifications->first();
-        }
-
-        // Handle dynamic document uploads based on requirements from specific classification
-        $requirements = $classification ? ($classification->requirements ?? []) : [];
+        // Handle dynamic document uploads based on requirements from this classification
+        $requirements = $classification->requirements ?? [];
         foreach ($requirements as $req) {
             $key = $req['key'] ?? null;
             if ($key && $request->hasFile($key)) {
@@ -135,20 +126,11 @@ class CitizenServiceController extends Controller
             }
         }
 
-        // Backward compatibility for old hardcoded fields if they exist in request but not in requirements
-        if ($request->hasFile('foto_lokasi_open_kamera') && !isset($metadata['foto_lokasi_open_kamera'])) {
-            $metadata['foto_lokasi_open_kamera'] = $cloudinary->upload($request->file('foto_lokasi_open_kamera'), 'taxpayers/survey');
-        }
-        
-        if ($request->hasFile('formulir_data_dukung') && !isset($metadata['formulir_data_dukung'])) {
-            $metadata['formulir_data_dukung'] = $cloudinary->upload($request->file('formulir_data_dukung'), 'taxpayers/docs');
-        }
-
         // Create the tax object
         $taxObject = TaxObject::create([
             'taxpayer_id' => $taxpayer->id,
             'retribution_type_id' => $service->id,
-            'retribution_classification_id' => $classification ? $classification->id : null,
+            'retribution_classification_id' => $classification->id,
             'opd_id' => $service->opd_id,
             'zone_id' => $request->zone_id,
             'name' => $request->name,
@@ -167,13 +149,12 @@ class CitizenServiceController extends Controller
             'document_number' => 'REG-' . strtoupper(uniqid()),
             'taxpayer_name' => $taxpayer->name,
             'type' => 'Pendaftaran Objek',
-            'amount' => 0, // Registration usually 0 or fixed admin fee
+            'amount' => 0,
             'status' => 'pending',
             'submitted_at' => Carbon::now(),
-            'notes' => 'Pendaftaran unit baru: ' . $taxObject->name,
+            'notes' => 'Pendaftaran unit baru (' . $classification->name . '): ' . $taxObject->name,
         ]);
 
-        // Update taxpayer's opd_id if not set (primary affiliation)
         if (!$taxpayer->opd_id) {
             $taxpayer->update(['opd_id' => $service->opd_id]);
         }
@@ -188,23 +169,18 @@ class CitizenServiceController extends Controller
     }
 
     /**
-     * Get bills for a specific service (aggregated across all objects)
+     * Get bills for a specific classification (aggregated across all objects)
      */
     public function bills(Request $request, $id)
     {
         $taxpayer = $request->user();
-        $service = RetributionType::findOrFail($id);
+        $classification = \App\Models\RetributionClassification::findOrFail($id);
         
         $objectIds = TaxObject::where('taxpayer_id', $taxpayer->id)
-            ->where('retribution_type_id', $service->id)
+            ->where('retribution_classification_id', $classification->id)
             ->pluck('id');
 
         $bills = Bill::whereIn('tax_object_id', $objectIds)
-            ->orWhere(function($q) use ($taxpayer, $service) {
-                $q->where('taxpayer_id', $taxpayer->id)
-                  ->where('retribution_type_id', $service->id)
-                  ->whereNull('tax_object_id');
-            })
             ->with(['opd:id,name', 'retributionType:id,name,icon', 'taxObject'])
             ->latest()
             ->get();

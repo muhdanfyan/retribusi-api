@@ -1,0 +1,13 @@
+#!/usr/bin/expect -f
+set timeout 120
+set password "Sipanda123#"
+spawn ssh -o StrictHostKeyChecking=no sipanda@157.10.252.74
+expect "password:"
+send "$password\r"
+expect "$ "
+send "ls -la /home/sipanda\r"
+expect "$ "
+send "ls -la /var/www\r"
+expect "$ "
+send "exit\r"
+expect eof
