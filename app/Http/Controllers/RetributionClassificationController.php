@@ -63,6 +63,16 @@ class RetributionClassificationController extends Controller
             $opdId = $request->opd_id;
         }
 
+        $form_schema = $request->form_schema;
+        if (is_string($form_schema)) {
+            $form_schema = json_decode($form_schema, true);
+        }
+
+        $requirements = $request->requirements;
+        if (is_string($requirements)) {
+            $requirements = json_decode($requirements, true);
+        }
+
         $classification = RetributionClassification::create([
             'opd_id' => $opdId,
             'retribution_type_id' => $request->retribution_type_id,
@@ -70,8 +80,8 @@ class RetributionClassificationController extends Controller
             'code' => $request->code,
             'icon' => $iconPath,
             'description' => $request->description,
-            'form_schema' => $request->form_schema ? json_decode($request->form_schema, true) : null,
-            'requirements' => $request->requirements ? json_decode($request->requirements, true) : null,
+            'form_schema' => $form_schema,
+            'requirements' => $requirements,
         ]);
 
         return response()->json([
@@ -110,10 +120,10 @@ class RetributionClassificationController extends Controller
         }
 
         if ($request->has('form_schema')) {
-            $data['form_schema'] = json_decode($request->form_schema, true);
+            $data['form_schema'] = is_string($request->form_schema) ? json_decode($request->form_schema, true) : $request->form_schema;
         }
         if ($request->has('requirements')) {
-            $data['requirements'] = json_decode($request->requirements, true);
+            $data['requirements'] = is_string($request->requirements) ? json_decode($request->requirements, true) : $request->requirements;
         }
 
         $retributionClassification->update($data);
